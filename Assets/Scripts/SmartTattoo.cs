@@ -15,12 +15,36 @@ public abstract class SmartTattoo : MonoBehaviour
 
     class Edge
     {
-        public Node a, b, c;
-        public Edge(Node a, Node b, Node c)
+        public int a, b, c;
+
+        public Edge(int a, int b, int c)
         {
             this.a = a;
             this.b = b;
             this.c = c;
+        }
+    }
+    class EdgeComparer : IComparer<Edge>
+    {
+        public int Compare(Edge e1, Edge e2)
+        {
+            if (e1.a < e2.a)
+            {
+                return 1;
+            }
+            else
+            {
+                if (e1.a <= e2.a)
+                {
+                    if (e1.b < e2.b) { return 1; }
+                    else if (e1.b > e2.b) { return -1; }
+                    else { return 0; }
+                }
+                else
+                {
+                    return -1;
+                }
+            }
         }
     }
 
@@ -41,6 +65,8 @@ public abstract class SmartTattoo : MonoBehaviour
     //Mesh info
     protected int verticesPerFace;
     protected int verticesPerWidth, verticesPerHeight;
+    [SerializeField]
+    private bool removeEmptySpaces = false;
 
     //Simulation
     protected Node[] nodes;
@@ -71,6 +97,8 @@ public abstract class SmartTattoo : MonoBehaviour
     }
 
     protected bool done = false;
+
+
     private void Update()
     {
         float h = Time.fixedDeltaTime / accuracy;
@@ -149,7 +177,7 @@ public abstract class SmartTattoo : MonoBehaviour
 
         //Quads
         Texture2D tex2D = (Texture2D)texture;
-        Quad[,] emptyQuads = new Quad[verticesPerWidth - 1, verticesPerHeight - 1];
+        Quad[,] quads = new Quad[verticesPerWidth - 1, verticesPerHeight - 1];
 
         for (int i = 0; i < verticesPerWidth - 1; i++)
         {
@@ -180,7 +208,7 @@ public abstract class SmartTattoo : MonoBehaviour
                         break;
                 }
 
-                emptyQuads[i, j] = q;
+                quads[i, j] = q;
 
                 /*t.Add(a);
                 t.Add(b);
@@ -203,35 +231,37 @@ public abstract class SmartTattoo : MonoBehaviour
         {
             for (int j = 0; j < verticesPerHeight - 1; j++)
             {
-                Quad q = emptyQuads[i, j];
-
-                bool allNeighboursEmptyOrOut = true;
-                //Find neighbours
-                for (int x = -1; x <= 1; x++)
+                Quad q = quads[i, j];
+                if (removeEmptySpaces)
                 {
-                    for (int y = -1; y <= 1; y++)
+                    bool allNeighboursEmptyOrOut = true;
+                    //Find neighbours
+                    for (int x = -1; x <= 1; x++)
                     {
-                        if (Mathf.Abs(x) + Mathf.Abs(y) != 1)
-                            continue;
-
-                        int ix = i + x;
-                        int jy = j + y;
-
-                        if (ix < 0 || jy < 0 || ix >= verticesPerWidth - 1 || jy >= verticesPerHeight - 1)
-                            continue;
-
-                        if (!emptyQuads[ix, jy].empty)
+                        for (int y = -1; y <= 1; y++)
                         {
-                            allNeighboursEmptyOrOut = false;
-                            break;
-                        }
-                    }
-                    if (!allNeighboursEmptyOrOut)
-                        break;
-                }
+                            if (Mathf.Abs(x) + Mathf.Abs(y) != 1)
+                                continue;
 
-                if (q.empty && allNeighboursEmptyOrOut)
-                    continue;
+                            int ix = i + x;
+                            int jy = j + y;
+
+                            if (ix < 0 || jy < 0 || ix >= verticesPerWidth - 1 || jy >= verticesPerHeight - 1)
+                                continue;
+
+                            if (!quads[ix, jy].empty)
+                            {
+                                allNeighboursEmptyOrOut = false;
+                                break;
+                            }
+                        }
+                        if (!allNeighboursEmptyOrOut)
+                            break;
+                    }
+
+                    if (q.empty && allNeighboursEmptyOrOut)
+                        continue;
+                }
 
                 t.Add(q.a);
                 t.Add(q.b);
@@ -254,17 +284,37 @@ public abstract class SmartTattoo : MonoBehaviour
         }*/
 
         List<Edge> edges = new List<Edge>();
+        EdgeComparer edgeComparer = new EdgeComparer();
         for (int i = 0; i < t.Count - 1; i += 3)
         {
-            edges.Add(new Edge(nodes[t[i]], nodes[t[i + 1]], nodes[t[i + 2]]));
-            edges.Add(new Edge(nodes[t[i]], nodes[t[i + 2]], nodes[t[i + 1]]));
-            edges.Add(new Edge(nodes[t[i + 1]], nodes[t[i + 2]], nodes[t[i]]));
+            edges.Add(new Edge(t[i], t[i + 1], t[i + 2]));
+            edges.Add(new Edge(t[i], t[i + 2], t[i + 1]));
+            edges.Add(new Edge(t[i + 1], t[i + 2], t[i]));
         }
 
+        edges.Sort(edgeComparer);
+
+        //Crea muelles
+        Edge lastEdge = new Edge(0, 0, 0);
         foreach (Edge e in edges)
         {
-            springs.Add(new Spring(e.a, e.b, this));
+            if (edgeComparer.Compare(lastEdge, e) == 0)
+            {
+                //Ya existe el muelle
+                //Se crea un muelle de flexion
+                springs.Add(new Spring(nodes[lastEdge.c], nodes[e.c], this));
+            }
+            else
+            {
+                springs.Add(new Spring(nodes[e.a], nodes[e.b], this));
+            }
+            lastEdge = e;
         }
+
+        /*foreach (Edge e in edges)
+        {
+            springs.Add(new Spring(e.a, e.b, this));
+        }*/
 
         foreach (Spring s in springs)
         {

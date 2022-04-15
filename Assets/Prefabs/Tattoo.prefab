@@ -102,3 +102,4 @@ MonoBehaviour:
   thickness: 0.003
   nodeMass: 0.001
   stiffness: 1
+  removeEmptySpaces: 1
