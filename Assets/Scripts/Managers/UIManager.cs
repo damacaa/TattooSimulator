@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -17,6 +19,12 @@ public class UIManager : MonoBehaviour
     GameObject settings;
     [SerializeField]
     GameObject selector;
+
+    [SerializeField]
+    Slider angleSlider;
+    [SerializeField]
+    Slider sizeSlider;
+
     void Start()
     {
         UI.SetActive(true);
@@ -32,5 +40,11 @@ public class UIManager : MonoBehaviour
     public void HideSettings()
     {
         settings.SetActive(false);
+    }
+
+    public void SetSettings(float angle, float size)
+    {
+        angleSlider.value = angle;
+        sizeSlider.value = size;
     }
 }

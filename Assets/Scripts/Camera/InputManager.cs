@@ -19,8 +19,6 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private float pinchSensitivity = 15.0f;
     //Gameobject that will be placed where structure is about to be built
-    public GameObject cursor;
-    private GameObject cursorBase;
 
 
 
@@ -31,19 +29,6 @@ public class InputManager : MonoBehaviour
     void Start()
     {
         isMobile = forceMobile;
-
-        //If no cursor is assigned, a cube will be created and used
-        if (cursor == null)
-        {
-            cursor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            Destroy(cursor.GetComponent<Collider>());
-            cursor.SetActive(false);
-        }
-        else
-        {
-            cursor = GameObject.Instantiate(cursor);
-            cursor.SetActive(false);
-        }
     }
 
     // Update is called once per frame
@@ -128,43 +113,7 @@ public class InputManager : MonoBehaviour
 
     private void MouseDrag()
     {
-        if (choosingWhereToBuild)
-        {
-            //Casts a ray to find out where does the player want to place the structure
-            Ray ray;
-            if (isMobile)
-                ray = Camera.main.ScreenPointToRay(mousePosition + offset);
-            else
-                ray = Camera.main.ScreenPointToRay(mousePosition);
-            RaycastHit hit = new RaycastHit();
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-            {
-                if (true)
-                {
-                    cursor.GetComponent<MeshRenderer>().material.color = Color.white;
-
-
-                    //Cursor activates and moves to position
-                    cursor.SetActive(true);
-
-                    cursor.transform.localScale = Vector3.one;
-                    cursor.transform.position = hit.point;
-
-                    cursor.transform.up = hit.normal;
-                }
-                else
-                {
-                    cursor.GetComponent<MeshRenderer>().material.color = wrongColor;
-                }
-            }
-            else
-            {
-                //If mouse isn't over the world, cursor is hidden and card is shown again
-                cursor.SetActive(false);
-            }
-        }
-        else if (!zooming && Input.mousePosition.x <= Screen.width * 0.9f)
+        if (!zooming && Input.mousePosition.x <= Screen.width * 0.9f)
         {
             //If not zooming, camera will be moved
             if (Mathf.Abs(Input.GetAxis("Mouse X")) > 30 || Mathf.Abs(Input.GetAxis("Mouse Y")) > 30)
@@ -188,8 +137,10 @@ public class InputManager : MonoBehaviour
                     break;
                 case "Man":
                     TattooManager.instance.PrintTattoo(hit.point, hit.normal);
+                    TattooManager.instance.Deselect();
                     break;
                 default:
+                    TattooManager.instance.Deselect();
                     break;
             }
         }
@@ -197,23 +148,7 @@ public class InputManager : MonoBehaviour
 
     public void MouseUp()
     {
-        Ray ray;
-        if (isMobile)
-            ray = Camera.main.ScreenPointToRay(mousePosition + offset);
-        else
-            ray = Camera.main.ScreenPointToRay(mousePosition);
-        RaycastHit hit = new RaycastHit();
 
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-        {
-            switch (hit.collider.tag)
-            {
-                default:
-                    break;
-            }
-        }
-
-        cursor.SetActive(false);
     }
 
     bool CheckPinch()

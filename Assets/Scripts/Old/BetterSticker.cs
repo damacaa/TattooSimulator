@@ -120,7 +120,7 @@ public class BetterSticker : MonoBehaviour
 
         if (totalFixed == mesh.vertexCount)
         {
-            gameObject.AddComponent<BoxCollider>();
+            //gameObject.AddComponent<BoxCollider>();
             enabled = false;
             return;
         }

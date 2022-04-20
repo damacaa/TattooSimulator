@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 public class Content : MonoBehaviour
 {
+    static public Content instance;
+
+
     [SerializeField]
     Transform content;
     [SerializeField]
@@ -14,8 +17,11 @@ public class Content : MonoBehaviour
     GameObject buttonPrefab;
     [SerializeField]
     bool loadFromFolder = true;
-    void Start()
+
+    public Dictionary<string, Texture> textures = new Dictionary<string, Texture>();
+    void Awake()
     {
+        instance = this;
         //string path = @"C:\Users\Public\Pictures\Sample Pictures\";
         StartCoroutine(LoadCoroutine());
     }
@@ -26,6 +32,8 @@ public class Content : MonoBehaviour
         {
             GameObject g = GameObject.Instantiate(buttonPrefab, content);
             g.GetComponent<TattooSelectionButton>().SetSprite(sprites[i]);
+            Texture t = sprites[i].texture;
+            textures[t.name] = t;
         }
         sprites.Clear();
         yield return null;
@@ -45,6 +53,10 @@ public class Content : MonoBehaviour
             for (int i = 0; i < files.Length; i++)
             {
                 Texture2D tex = LoadPNG(files[i]);
+                string name = Path.GetFileName(files[i]);
+                name = Path.GetFileNameWithoutExtension(name);
+                tex.name = name;
+                textures[name] = tex;
                 yield return null;
                 Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                 yield return null;
@@ -55,10 +67,12 @@ public class Content : MonoBehaviour
             }
             Debug.Log("Loading done");
         }
+
+        yield return null;
+        TattooManager.instance.LoadData();
         yield return null;
 #endif
     }
-
 
     public static Texture2D LoadPNG(string filePath)
     {

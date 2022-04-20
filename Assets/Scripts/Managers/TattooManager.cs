@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +13,8 @@ public class TattooManager : MonoBehaviour
         instance = this;
         HideCursor();
     }
-
+    [SerializeField]
+    string fileName = "data";
     [SerializeField]
     GameObject tattooPrefab;
     [SerializeField]
@@ -20,6 +22,8 @@ public class TattooManager : MonoBehaviour
 
     Texture currentTattooTexture;
     GameObject lastTattoo;
+
+    SmartTattoo selectedTattoo;
 
     float angle = 0;
     float size = 0.1f;
@@ -31,7 +35,7 @@ public class TattooManager : MonoBehaviour
 
     public void SetSize(float s)
     {
-        size = s / 100f;
+        size = s;
     }
 
     public void SetTexture(Texture t)
@@ -95,4 +99,127 @@ public class TattooManager : MonoBehaviour
         if (lastTattoo)
             Destroy(lastTattoo);
     }
+
+    public void SelectTattoo(SmartTattoo tattoo)
+    {
+        selectedTattoo = tattoo;
+        UIManager.instance.ShowSettings();
+        UIManager.instance.SetSettings(0, tattoo.transform.localScale.x);
+        StartCoroutine(AdjustTattoo());
+    }
+
+    IEnumerator AdjustTattoo()
+    {
+        float lastSize = size;
+        float lastAngle = angle;
+
+        Vector3 rot = selectedTattoo.transform.rotation.eulerAngles;
+        float defaultZ = rot.z;
+
+        bool hasChanges = false;
+        SmartTattoo t = selectedTattoo;
+        while (selectedTattoo != null && selectedTattoo == t)
+        {
+            //Vector3 rot = selectedTattoo.transform.rotation.eulerAngles;
+            //rot.z += angle;
+            //g.transform.rotation = Quaternion.Euler(rot);
+            if (angle != lastAngle)
+            {
+                if (!hasChanges)
+                {
+                    selectedTattoo.Reset();
+                    hasChanges = true;
+                }
+
+                lastAngle = angle;
+                rot.z = defaultZ + angle;
+                selectedTattoo.transform.rotation = Quaternion.Euler(rot);
+            }
+
+            if (size != lastSize)
+            {
+                if (!hasChanges)
+                {
+                    selectedTattoo.Reset();
+                    hasChanges = true;
+                }
+
+                lastSize = size;
+                selectedTattoo.transform.localScale = new Vector3(size, size, 1);
+                selectedTattoo.AdjustScale();
+            }
+            yield return null;
+        }
+
+        if (hasChanges && t)
+            t.Begin();
+
+        yield return null;
+    }
+
+    public void Deselect()
+    {
+        selectedTattoo = null;
+        UIManager.instance.HideSettings();
+    }
+
+    public void DeleteSelected()
+    {
+        if (selectedTattoo)
+        {
+            Destroy(selectedTattoo.gameObject);
+            UIManager.instance.HideSettings();
+        }
+    }
+
+    List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
+    public void LoadData()
+    {
+        if (!File.Exists(Application.dataPath + "/" + fileName + ".txt"))
+            return;
+
+        string data = File.ReadAllText(Application.dataPath + "/" + fileName + ".txt");
+
+
+        TattoList tattoList = JsonUtility.FromJson<TattoList>(data);
+        foreach (TattooInfo t in tattoList.tattoos)
+        {
+            Texture tex;
+            if (!Content.instance.textures.TryGetValue(t.texture, out tex))
+            {
+                unableToLoadTattoos.Add(t);
+                print("Unable to load " + t.texture);
+                continue;
+            }
+
+            GameObject g = GameObject.Instantiate(tattooPrefab, t.position, Quaternion.Euler(t.euler));
+            g.transform.localScale = new Vector3(t.size, t.size, 1);
+            g.GetComponent<SmartTattoo>().texture = tex;
+        }
+    }
+
+    private void OnDisable()
+    {
+        SmartTattoo[] tattoos = FindObjectsOfType<SmartTattoo>();
+        List<TattooInfo> tattooInfos = new List<TattooInfo>();
+        for (int i = 0; i < tattoos.Length; i++)
+        {
+            tattooInfos.Add(tattoos[i].GetInfo());
+        }
+
+        tattooInfos.AddRange(unableToLoadTattoos);
+
+        TattoList tattooList = new TattoList();
+        tattooList.tattoos = tattooInfos.ToArray();
+
+        string json = JsonUtility.ToJson(tattooList);
+        File.WriteAllText(Application.dataPath + "/" + fileName + ".txt", json);
+    }
+
+    [System.Serializable]
+    class TattoList
+    {
+        public TattooInfo[] tattoos;
+    }
+
 }

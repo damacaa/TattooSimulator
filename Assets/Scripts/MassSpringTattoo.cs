@@ -25,12 +25,4 @@ public class MassSpringTattoo : SmartTattoo
         }
         mesh.vertices = v;
     }
-
-    protected void OnMouseDown()
-    {
-        CameraBehaviour.instance.MoveTargetTo(transform.position);
-#if UNITY_EDITOR
-        Selection.activeObject = this;
-#endif
-    }
 }

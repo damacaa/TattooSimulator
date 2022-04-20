@@ -96,6 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60aca3675715d614ba963c27e92e22c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  paused: 1
   texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
   accuracy: 5
   divisions: 15

@@ -17,11 +17,6 @@ public class TattooSelectionButton : MonoBehaviour
 
     }
 
-    private void Update()
-    {
-        //tattooImage.sprite = sprite;
-    }
-
     public void SelectTattoo()
     {
         TattooManager.instance.SetTexture(tattooImage.mainTexture);

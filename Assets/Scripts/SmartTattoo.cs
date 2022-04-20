@@ -48,6 +48,9 @@ public abstract class SmartTattoo : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    bool paused = true;
+
     //Parameters
     [SerializeField]
     public Texture texture;
@@ -73,22 +76,40 @@ public abstract class SmartTattoo : MonoBehaviour
     protected List<Spring> springs;
 
     protected Mesh mesh;
+    Vector3[] defaultVertices;
 
-    void Start()
+    private void Start()
+    {
+        Begin();
+    }
+
+    public void Reset()
+    {
+        enabled = true;
+        mesh.vertices = defaultVertices;
+        paused = true;
+    }
+
+    public void Begin()
     {
         gameObject.tag = "Tattoo";
         name = "Tatto: " + texture.name;
-        AdjustScale();
         GetComponent<MeshRenderer>().material.mainTexture = texture;
 
-        int a = 0;
+        paused = false;
+        AdjustScale();
+
         float step = Time.fixedDeltaTime / accuracy;
         Vector3 pos = transform.position;
 
-        while (a < 1000 && Physics.CheckBox(pos, new Vector3(transform.localScale.x, transform.localScale.y, 0.05f) / 4f, transform.rotation))
+        while (Physics.CheckBox(pos, new Vector3(transform.localScale.x, transform.localScale.y, 0.05f) / 4f, transform.rotation))
         {
             pos -= step * transform.forward;
-            a++;
+        }
+
+        while (!Physics.CheckBox(pos + step * transform.forward, new Vector3(transform.localScale.x, transform.localScale.y, 0.05f) / 4f, transform.rotation))
+        {
+            pos += step * transform.forward;
         }
 
         transform.position = pos;
@@ -101,6 +122,9 @@ public abstract class SmartTattoo : MonoBehaviour
 
     private void Update()
     {
+        if (paused)
+            return;
+
         float h = Time.fixedDeltaTime / accuracy;
 
         for (int t = 0; t < Mathf.Sqrt(accuracy); t++)
@@ -118,13 +142,14 @@ public abstract class SmartTattoo : MonoBehaviour
                 enabled = false;
 
                 Debug.Log(name + " done");
+                return;
             }
         }
     }
 
     protected abstract void UpdateMesh(float h);
 
-    protected void AdjustScale()
+    public void AdjustScale()
     {
         float width = transform.localScale.x;
         float heigth = width * (float)texture.height / (float)texture.width;//Not working perfectly, texture width and height don't match picture's
@@ -174,6 +199,8 @@ public abstract class SmartTattoo : MonoBehaviour
                 uv[(verticesPerWidth * j) + i] = new Vector2(u, v);
             }
         }
+
+        defaultVertices = vertices;
 
         //Quads
         Texture2D tex2D = (Texture2D)texture;
@@ -342,6 +369,7 @@ public abstract class SmartTattoo : MonoBehaviour
     protected void OnMouseDown()
     {
         CameraBehaviour.instance.MoveTargetTo(transform.position);
+        TattooManager.instance.SelectTattoo(this);
 #if UNITY_EDITOR
         Selection.activeObject = this;
 #endif
@@ -395,6 +423,26 @@ public abstract class SmartTattoo : MonoBehaviour
         }
     }
 #endif
+
+    public TattooInfo GetInfo()
+    {
+        TattooInfo info = new TattooInfo();
+
+        info.texture = texture.name;
+        info.position = transform.position;
+        info.euler = transform.rotation.eulerAngles;
+        info.size = transform.localScale.x;
+
+        return info;
+    }
+}
+
+[System.Serializable]
+public class TattooInfo
+{
+    public string texture;
+    public Vector3 position, euler;
+    public float size;
 }
 
 
