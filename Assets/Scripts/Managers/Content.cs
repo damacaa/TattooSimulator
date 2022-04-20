@@ -22,12 +22,8 @@ public class Content : MonoBehaviour
     void Awake()
     {
         instance = this;
-        //string path = @"C:\Users\Public\Pictures\Sample Pictures\";
-        StartCoroutine(LoadCoroutine());
-    }
 
-    IEnumerator LoadCoroutine()
-    {
+#if UNITY_WEBGL || UNITY_EDITOR
         for (int i = 0; i < sprites.Count; i++)
         {
             GameObject g = GameObject.Instantiate(buttonPrefab, content);
@@ -36,7 +32,7 @@ public class Content : MonoBehaviour
             textures[t.name] = t;
         }
         sprites.Clear();
-        yield return null;
+#endif
 
 #if UNITY_STANDALONE || UNITY_EDITOR
         if (loadFromFolder)
@@ -47,7 +43,7 @@ public class Content : MonoBehaviour
 
             string[] files;
             files = System.IO.Directory.GetFiles(path, "*.png");
-            yield return null;
+
 
 
             for (int i = 0; i < files.Length; i++)
@@ -57,20 +53,19 @@ public class Content : MonoBehaviour
                 name = Path.GetFileNameWithoutExtension(name);
                 tex.name = name;
                 textures[name] = tex;
-                yield return null;
+
                 Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
-                yield return null;
+
 
                 GameObject g = GameObject.Instantiate(buttonPrefab, content);
                 g.GetComponent<TattooSelectionButton>().SetSprite(s);
-                yield return null;
+
             }
             Debug.Log("Loading done");
         }
 
-        yield return null;
-        TattooManager.instance.LoadData();
-        yield return null;
+        //TattooManager.instance.LoadData();
+
 #endif
     }
 

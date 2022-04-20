@@ -24,6 +24,7 @@ public class TattooManager : MonoBehaviour
     GameObject lastTattoo;
 
     SmartTattoo selectedTattoo;
+    List<SmartTattoo> spawnedTattoos = new List<SmartTattoo>();
 
     float angle = 0;
     float size = 0.1f;
@@ -48,7 +49,7 @@ public class TattooManager : MonoBehaviour
     {
         if (!currentTattooTexture)
         {
-            print("No tattoo selected");
+            //print("No tattoo selected");
             return;
         }
 
@@ -60,15 +61,18 @@ public class TattooManager : MonoBehaviour
         Vector3 rot = g.transform.rotation.eulerAngles;
         rot.z += angle;
         g.transform.rotation = Quaternion.Euler(rot);
-
         g.transform.localScale = new Vector3(size, size, 1);
 
-        g.GetComponent<SmartTattoo>().texture = currentTattooTexture;
+        SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
+        smartTattoo.texture = currentTattooTexture;
+        spawnedTattoos.Add(smartTattoo);
+
         lastTattoo = g;
         currentTattooTexture = null;
 
         HideCursor();
         UIManager.instance.HideSettings();
+        Save();
 
 #if UNITY_EDITOR
         Selection.activeObject = g;
@@ -97,7 +101,11 @@ public class TattooManager : MonoBehaviour
     public void Undo()
     {
         if (lastTattoo)
+        {
+            spawnedTattoos.Remove(lastTattoo.GetComponent<SmartTattoo>());
             Destroy(lastTattoo);
+            Save();
+        }
     }
 
     public void SelectTattoo(SmartTattoo tattoo)
@@ -152,7 +160,10 @@ public class TattooManager : MonoBehaviour
         }
 
         if (hasChanges && t)
+        {
             t.Begin();
+            Save();
+        }
 
         yield return null;
     }
@@ -167,9 +178,15 @@ public class TattooManager : MonoBehaviour
     {
         if (selectedTattoo)
         {
+            spawnedTattoos.Remove(selectedTattoo);
             Destroy(selectedTattoo.gameObject);
             UIManager.instance.HideSettings();
         }
+    }
+
+    private void Start()
+    {
+        LoadData();
     }
 
     List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
@@ -194,17 +211,18 @@ public class TattooManager : MonoBehaviour
 
             GameObject g = GameObject.Instantiate(tattooPrefab, t.position, Quaternion.Euler(t.euler));
             g.transform.localScale = new Vector3(t.size, t.size, 1);
-            g.GetComponent<SmartTattoo>().texture = tex;
+            SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
+            smartTattoo.texture = tex;
+            spawnedTattoos.Add(smartTattoo);
         }
     }
 
-    private void OnDisable()
+    private void Save()
     {
-        SmartTattoo[] tattoos = FindObjectsOfType<SmartTattoo>();
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
-        for (int i = 0; i < tattoos.Length; i++)
+        foreach (SmartTattoo smartTattoo in spawnedTattoos)
         {
-            tattooInfos.Add(tattoos[i].GetInfo());
+            tattooInfos.Add(smartTattoo.GetInfo());
         }
 
         tattooInfos.AddRange(unableToLoadTattoos);

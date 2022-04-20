@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 517466661946979815}
   - component: {fileID: 517466661946979864}
   - component: {fileID: 517466661946979865}
+  - component: {fileID: 2160650940489686434}
   m_Layer: 0
   m_Name: Tattoo
   m_TagString: Tattoo
@@ -104,3 +105,17 @@ MonoBehaviour:
   nodeMass: 0.001
   stiffness: 1
   removeEmptySpaces: 1
+--- !u!64 &2160650940489686434
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 517466661946979867}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}

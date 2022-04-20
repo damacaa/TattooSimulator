@@ -137,7 +137,7 @@ public abstract class SmartTattoo : MonoBehaviour
                 mesh.RecalculateNormals();
                 mesh.RecalculateBounds();
                 mesh.RecalculateTangents();
-                gameObject.AddComponent<MeshCollider>();
+                GetComponent<MeshCollider>().sharedMesh = mesh;
                 Print();
                 enabled = false;
 
