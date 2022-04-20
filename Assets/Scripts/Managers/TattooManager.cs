@@ -51,10 +51,10 @@ public class TattooManager : MonoBehaviour
         //pos = new Vector3(0, 1.2f, -1);
         //normal = new Vector3(0, 0, -1);
 
-        GameObject g = GameObject.Instantiate(tattooPrefab, pos, Quaternion.LookRotation(-normal, Vector3.up));
+        GameObject g = GameObject.Instantiate(tattooPrefab, pos, Quaternion.LookRotation(-normal, Camera.main.transform.up));
 
         Vector3 rot = g.transform.rotation.eulerAngles;
-        rot.z = angle;
+        rot.z += angle;
         g.transform.rotation = Quaternion.Euler(rot);
 
         g.transform.localScale = new Vector3(size, size, 1);

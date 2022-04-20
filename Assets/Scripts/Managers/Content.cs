@@ -12,6 +12,8 @@ public class Content : MonoBehaviour
     List<Sprite> sprites;
     [SerializeField]
     GameObject buttonPrefab;
+    [SerializeField]
+    bool loadFromFolder = true;
     void Start()
     {
         //string path = @"C:\Users\Public\Pictures\Sample Pictures\";
@@ -20,14 +22,6 @@ public class Content : MonoBehaviour
 
     IEnumerator LoadCoroutine()
     {
-        string path = Directory.GetParent(Application.dataPath).ToString() + "\\Images";
-
-        string pathPreFix = @"file://";
-
-        string[] files;
-        files = System.IO.Directory.GetFiles(path, "*.png");
-        yield return null;
-
         for (int i = 0; i < sprites.Count; i++)
         {
             GameObject g = GameObject.Instantiate(buttonPrefab, content);
@@ -36,19 +30,33 @@ public class Content : MonoBehaviour
         sprites.Clear();
         yield return null;
 
-        for (int i = 0; i < files.Length; i++)
+#if UNITY_STANDALONE || UNITY_EDITOR
+        if (loadFromFolder)
         {
-            Texture2D tex = LoadPNG(files[i]);
-            yield return null;
-            Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+            string path = Directory.GetParent(Application.dataPath).ToString() + "\\Images";
+
+            //string pathPreFix = @"file://";
+
+            string[] files;
+            files = System.IO.Directory.GetFiles(path, "*.png");
             yield return null;
 
-            GameObject g = GameObject.Instantiate(buttonPrefab, content);
-            g.GetComponent<TattooSelectionButton>().SetSprite(s);
-            yield return null;
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                Texture2D tex = LoadPNG(files[i]);
+                yield return null;
+                Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+                yield return null;
+
+                GameObject g = GameObject.Instantiate(buttonPrefab, content);
+                g.GetComponent<TattooSelectionButton>().SetSprite(s);
+                yield return null;
+            }
+            Debug.Log("Loading done");
         }
-        Debug.Log("Loading done");
         yield return null;
+#endif
     }
 
 
