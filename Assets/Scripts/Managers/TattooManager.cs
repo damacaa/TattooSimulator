@@ -192,6 +192,7 @@ public class TattooManager : MonoBehaviour
     List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
     public void LoadData()
     {
+#if UNITY_STANDALONE || UNITY_EDITOR
         if (!File.Exists(Application.dataPath + "/" + fileName + ".txt"))
             return;
 
@@ -215,10 +216,12 @@ public class TattooManager : MonoBehaviour
             smartTattoo.texture = tex;
             spawnedTattoos.Add(smartTattoo);
         }
+#endif
     }
 
     private void Save()
     {
+#if UNITY_STANDALONE || UNITY_EDITOR
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
         foreach (SmartTattoo smartTattoo in spawnedTattoos)
         {
@@ -232,6 +235,7 @@ public class TattooManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(tattooList);
         File.WriteAllText(Application.dataPath + "/" + fileName + ".txt", json);
+#endif
     }
 
     [System.Serializable]
