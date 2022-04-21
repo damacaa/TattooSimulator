@@ -13,8 +13,10 @@ public class TattooManager : MonoBehaviour
         instance = this;
         HideCursor();
     }
+
     [SerializeField]
     string fileName = "data";
+    string folderPath = "";
     [SerializeField]
     GameObject tattooPrefab;
     [SerializeField]
@@ -186,17 +188,18 @@ public class TattooManager : MonoBehaviour
 
     private void Start()
     {
+        folderPath = Application.dataPath + "/Saves/";
         LoadData();
     }
 
     List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
     public void LoadData()
     {
-#if UNITY_STANDALONE || UNITY_EDITOR
-        if (!File.Exists(Application.dataPath + "/" + fileName + ".txt"))
+#if !UNITY_WEBGL || UNITY_EDITOR
+        if (!File.Exists(folderPath + fileName + ".txt"))
             return;
 
-        string data = File.ReadAllText(Application.dataPath + "/" + fileName + ".txt");
+        string data = File.ReadAllText(folderPath + fileName + ".txt");
 
 
         TattoList tattoList = JsonUtility.FromJson<TattoList>(data);
@@ -221,7 +224,7 @@ public class TattooManager : MonoBehaviour
 
     private void Save()
     {
-#if UNITY_STANDALONE || UNITY_EDITOR
+#if !UNITY_WEBGL|| UNITY_EDITOR
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
         foreach (SmartTattoo smartTattoo in spawnedTattoos)
         {
@@ -234,7 +237,7 @@ public class TattooManager : MonoBehaviour
         tattooList.tattoos = tattooInfos.ToArray();
 
         string json = JsonUtility.ToJson(tattooList);
-        File.WriteAllText(Application.dataPath + "/" + fileName + ".txt", json);
+        File.WriteAllText(folderPath + fileName + ".txt", json);
 #endif
     }
 

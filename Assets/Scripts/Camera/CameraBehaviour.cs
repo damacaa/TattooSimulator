@@ -77,7 +77,7 @@ public class CameraBehaviour : MonoBehaviour
         // Substract forward vector of the GameObject to point its forward vector to the target
         targetPosition = Vector3.SmoothDamp(targetPosition, _target.position, ref _movementVelocity, _smoothTime);
         transform.position = targetPosition - transform.forward * _distanceFromTarget;
-        _distanceFromTarget = Mathf.SmoothStep(_distanceFromTarget, _desiredDistanceFromTarget, 20f*Time.deltaTime);
+        _distanceFromTarget = Mathf.SmoothStep(_distanceFromTarget, _desiredDistanceFromTarget, 20f * Time.deltaTime);//t = v*e
     }
 
     public void Zoom(float amount)
@@ -131,5 +131,13 @@ public class CameraBehaviour : MonoBehaviour
     {
         _target.position = v;
     }
+
+
+
+    /*private void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 100, 20), _rotationX.ToString());
+        GUI.Label(new Rect(10, 30, 100, 20), _rotationY.ToString());
+    }*/
 
 }
