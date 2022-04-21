@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using static NativeGallery;
 
 public class Content : MonoBehaviour
 {
@@ -23,13 +24,12 @@ public class Content : MonoBehaviour
     {
         instance = this;
 
-#if UNITY_WEBGL || UNITY_EDITOR
         for (int i = 0; i < sprites.Count; i++)
         {
             AddButton(sprites[i].texture, sprites[i].texture.name);
         }
         sprites.Clear();
-#endif
+
 
 #if !UNITY_WEBGL || UNITY_EDITOR
         if (loadFromFolder)
@@ -89,7 +89,11 @@ public class Content : MonoBehaviour
         GetImage.GetImageFromUserAsync(gameObject.name, "ReceiveImage");
         //Alternative:
         //https://forum.unity.com/threads/how-do-i-let-the-user-load-an-image-from-their-harddrive-into-a-webgl-app.380985/
+#else
+        PickImage(0);
 #endif
+
+
     }
 
 
@@ -119,4 +123,30 @@ public class Content : MonoBehaviour
         }
     }
 #endif
+
+    private void PickImage(int maxSize)
+    {
+        NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
+        {
+            Debug.Log("Image path: " + path);
+            if (path != null)
+            {
+                // Create Texture from selected image
+                Texture2D texture = NativeGallery.LoadImageAtPath(path, maxSize);//Check all paramenters later
+                if (texture == null)
+                {
+                    Debug.Log("Couldn't load texture from " + path);
+                    return;
+                }
+
+                AddButton(texture, Path.GetFileNameWithoutExtension(path));
+
+                // If a procedural texture is not destroyed manually, 
+                // it will only be freed after a scene change
+                //Destroy(texture, 5f);
+            }
+        });
+
+        Debug.Log("Permission result: " + permission);
+    }
 }

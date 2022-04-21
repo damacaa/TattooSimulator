@@ -180,7 +180,7 @@ public class InputManager : MonoBehaviour
 
             if (difference < 50)
             {
-                CameraBehaviour.instance.Zoom((difference) * Time.deltaTime * pinchSensitivity);
+                CameraBehaviour.instance.Zoom(-difference * Time.deltaTime * pinchSensitivity);
             }
         }
 

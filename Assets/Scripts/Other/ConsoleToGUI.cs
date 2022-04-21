@@ -2,9 +2,12 @@ using UnityEngine;
 
 public class ConsoleToGUI : MonoBehaviour
 {
+    [SerializeField]
+    bool doShow = false;
+    [SerializeField]
+    bool saveToFile = false;
     string myLog = "*begin log";
     string filename = "";
-    bool doShow = false;
     int kChars = 700;
     void OnEnable() { Application.logMessageReceived += Log; }
     void OnDisable() { Application.logMessageReceived -= Log; }
@@ -15,6 +18,8 @@ public class ConsoleToGUI : MonoBehaviour
         myLog = myLog + "\n" + logString;
         if (myLog.Length > kChars) { myLog = myLog.Substring(myLog.Length - kChars); }
 
+        if (!saveToFile)
+            return;
         // for the file ...
         if (filename == "")
         {

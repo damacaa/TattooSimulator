@@ -2044,7 +2044,7 @@ MonoBehaviour:
   scrollSensitivity: 0.1
   _distanceFromTarget: 5
   maxDistance: 5
-  minDistance: 0.1
+  minDistance: 0.15
   _smoothTime: 0.2
   _rotationXMinMax: {x: -90, y: 90}
   freeMovement: 1
@@ -3733,11 +3733,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   choosingWhereToBuild: 0
-  forceMobile: 0
+  forceMobile: 1
   offset: {x: 0, y: 0, z: 0}
   mousePosition: {x: 0, y: 0, z: 0}
   wrongColor: {r: 0.7264151, g: 0.2, b: 0.22272162, a: 1}
-  pinchSensitivity: 15
+  pinchSensitivity: 1
 --- !u!1 &1875102140
 GameObject:
   m_ObjectHideFlags: 0
@@ -4042,6 +4042,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 285583caf260f2d45a467ce587bbce03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  doShow: 1
+  saveToFile: 0
 --- !u!4 &2104482195
 Transform:
   m_ObjectHideFlags: 0
