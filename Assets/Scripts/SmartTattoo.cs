@@ -141,7 +141,7 @@ public abstract class SmartTattoo : MonoBehaviour
                 Print();
                 enabled = false;
 
-                Debug.Log(name + " done");
+                //Debug.Log(name + " done");
                 return;
             }
         }
@@ -218,21 +218,27 @@ public abstract class SmartTattoo : MonoBehaviour
                 q.d = (verticesPerWidth * j) + i + 1;
                 q.empty = true;
 
-                Vector2 point = uv[q.a];
-
-                const int step = 3;
-                for (int u = 0; u < tex2D.width / (verticesPerWidth - 1); u += step)
+                if (tex2D.isReadable)
                 {
-                    for (int v = 0; v < tex2D.height / (verticesPerHeight - 1); v += step)
+                    Vector2 point = uv[q.a];
+                    const int step = 3;
+                    for (int u = 0; u < tex2D.width / (verticesPerWidth - 1); u += step)
                     {
-                        if (tex2D.GetPixel((int)(point.x * tex2D.width) + u, (int)(point.y * tex2D.height) + v) != Color.clear)
+                        for (int v = 0; v < tex2D.height / (verticesPerHeight - 1); v += step)
                         {
-                            q.empty = false;
-                            break;
+                            if (tex2D.GetPixel((int)(point.x * tex2D.width) + u, (int)(point.y * tex2D.height) + v) != Color.clear)
+                            {
+                                q.empty = false;
+                                break;
+                            }
                         }
+                        if (!q.empty)
+                            break;
                     }
-                    if (!q.empty)
-                        break;
+                }
+                else
+                {
+                    print("Texture in " + name + " is not readable");
                 }
 
                 quads[i, j] = q;

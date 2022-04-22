@@ -5,9 +5,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using static NativeGallery;
 
-public class Content : MonoBehaviour
+public class DesignManager : MonoBehaviour
 {
-    static public Content instance;
+    static public DesignManager instance;
 
 
     [SerializeField]
@@ -19,10 +19,14 @@ public class Content : MonoBehaviour
     [SerializeField]
     bool loadFromFolder = true;
 
+    string imageFolderPath;
+
     public Dictionary<string, Texture> textures = new Dictionary<string, Texture>();
     void Awake()
     {
         instance = this;
+
+        imageFolderPath = Directory.GetParent(Application.dataPath).ToString() + "/Images/";
 
         for (int i = 0; i < sprites.Count; i++)
         {
@@ -30,22 +34,19 @@ public class Content : MonoBehaviour
         }
         sprites.Clear();
 
-
 #if !UNITY_WEBGL || UNITY_EDITOR
         if (loadFromFolder)
         {
-            string path = Directory.GetParent(Application.dataPath).ToString() + "\\Images";
-
             string[] files;
-            files = System.IO.Directory.GetFiles(path, "*.png");
+            files = System.IO.Directory.GetFiles(imageFolderPath, "*.png");
 
             for (int i = 0; i < files.Length; i++)
             {
                 Texture2D tex = LoadPNG(files[i]);
-                string name = Path.GetFileName(files[i]);
+                string name = Path.GetFileNameWithoutExtension(files[i]);
                 AddButton(tex, name);
             }
-            Debug.Log("Loading done");
+            //Debug.Log("Loading done");
         }
 
         //TattooManager.instance.LoadData();
@@ -63,7 +64,7 @@ public class Content : MonoBehaviour
         g.GetComponent<TattooSelectionButton>().SetSprite(s);
         g.transform.SetSiblingIndex(g.transform.GetSiblingIndex() - 1);
 
-        Resources.UnloadUnusedAssets();
+        //Resources.UnloadUnusedAssets();
     }
 
     public static Texture2D LoadPNG(string filePath)
@@ -139,7 +140,13 @@ public class Content : MonoBehaviour
                     return;
                 }
 
-                AddButton(texture, Path.GetFileNameWithoutExtension(path));
+                string name = Path.GetFileNameWithoutExtension(path);
+                AddButton(texture, name);
+
+#if UNITY_STANDALONE || UNITY_EDITOR
+                byte[] bytes = texture.EncodeToPNG();
+                File.WriteAllBytes(imageFolderPath + name + ".png", bytes);
+#endif
 
                 // If a procedural texture is not destroyed manually, 
                 // it will only be freed after a scene change

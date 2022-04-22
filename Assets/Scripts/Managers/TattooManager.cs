@@ -14,9 +14,7 @@ public class TattooManager : MonoBehaviour
         HideCursor();
     }
 
-    [SerializeField]
-    string fileName = "data";
-    string folderPath = "";
+
     [SerializeField]
     GameObject tattooPrefab;
     [SerializeField]
@@ -26,7 +24,7 @@ public class TattooManager : MonoBehaviour
     GameObject lastTattoo;
 
     SmartTattoo selectedTattoo;
-    List<SmartTattoo> spawnedTattoos = new List<SmartTattoo>();
+    public List<SmartTattoo> spawnedTattoos = new List<SmartTattoo>();
 
     float angle = 0;
     float size = 0.1f;
@@ -186,27 +184,51 @@ public class TattooManager : MonoBehaviour
         }
     }
 
+    public void Reset()
+    {
+        selectedTattoo = null;
+        currentTattooTexture = null;
+        lastTattoo = null;
+        foreach (SmartTattoo t in spawnedTattoos)
+        {
+            Destroy(t.gameObject);
+        }
+        spawnedTattoos.Clear();
+        UIManager.instance.HideSettings();
+    }
+
+    /////////////////////// THIS SHOULD BE ANOTHER SCRIPT
+    [SerializeField]
+    string profile = "data";
+
     private void Start()
     {
-        folderPath = Application.dataPath + "/Saves/";
+        FileManager.SetProfile(profile);
         LoadData();
+    }
+
+    public void SetProfile(string s)
+    {
+        profile = s;
+        FileManager.SetProfile(profile);
     }
 
     List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
     public void LoadData()
     {
-#if !UNITY_WEBGL || UNITY_EDITOR
-        if (!File.Exists(folderPath + fileName + ".txt"))
+        unableToLoadTattoos.Clear();
+        Reset();
+
+        string data = FileManager.Load();
+
+        if (data == null)
             return;
-
-        string data = File.ReadAllText(folderPath + fileName + ".txt");
-
 
         TattoList tattoList = JsonUtility.FromJson<TattoList>(data);
         foreach (TattooInfo t in tattoList.tattoos)
         {
             Texture tex;
-            if (!Content.instance.textures.TryGetValue(t.texture, out tex))
+            if (!DesignManager.instance.textures.TryGetValue(t.texture, out tex))
             {
                 unableToLoadTattoos.Add(t);
                 print("Unable to load " + t.texture);
@@ -218,13 +240,14 @@ public class TattooManager : MonoBehaviour
             SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
             smartTattoo.texture = tex;
             spawnedTattoos.Add(smartTattoo);
+
         }
-#endif
     }
 
     private void Save()
     {
-#if !UNITY_WEBGL|| UNITY_EDITOR
+        print("Saving: " + FileManager.Path);
+
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
         foreach (SmartTattoo smartTattoo in spawnedTattoos)
         {
@@ -236,10 +259,12 @@ public class TattooManager : MonoBehaviour
         TattoList tattooList = new TattoList();
         tattooList.tattoos = tattooInfos.ToArray();
 
-        string json = JsonUtility.ToJson(tattooList);
-        File.WriteAllText(folderPath + fileName + ".txt", json);
-#endif
+        string data = JsonUtility.ToJson(tattooList);
+
+        FileManager.Save(data);
     }
+
+
 
     [System.Serializable]
     class TattoList

@@ -35,9 +35,18 @@ public class ConsoleToGUI : MonoBehaviour
 
     void OnGUI()
     {
-        if (!doShow) { return; }
+        if (!doShow)
+        {
+            if (GUI.Button(new Rect(10, 10, 80, 30), "Console"))
+                doShow = true;
+            return;
+        }
+
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,
-           new Vector3(Screen.width / 1200.0f, Screen.height / 800.0f, 1.0f));
+           new Vector3(Screen.width / 1500.0f, Screen.height / 800.0f, 1.0f));
         GUI.TextArea(new Rect(10, 10, 540, 370), myLog);
+
+        if (GUI.Button(new Rect(10, 390, 50, 30), "Close"))
+            doShow = false;
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -33,5 +34,15 @@ public class Helpers
             }
         }
         return results;
+    }
+
+    public static DirectoryInfo SafeCreateDirectory(string path)
+    {
+        //Generate if you don't check if the directory exists
+        if (Directory.Exists(path))
+        {
+            return null;
+        }
+        return Directory.CreateDirectory(path);
     }
 }
