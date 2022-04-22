@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -5,6 +6,8 @@ using UnityEngine;
 
 public class FileManager
 {
+
+    public static string root;
     public static string folderPath;
     public static string fileName;
 
@@ -13,37 +16,54 @@ public class FileManager
         get { return folderPath + fileName; }
     }
 
+    public static string SettingsPath
+    {
+        get { return root + "/settings.txt"; }
+    }
+
+    public static void Initialize()
+    {
+#if UNITY_STANDALONE || UNITY_EDITOR
+
+        root = Application.dataPath;
+#else
+
+        root = Application.persistentDataPath;
+#endif
+        Helpers.SafeCreateDirectory(root + "/Saves");
+    }
+
     public static void SetProfile(string profile)
     {
         fileName = profile + ".txt";
-
-#if UNITY_STANDALONE || UNITY_EDITOR
-
-        folderPath = Application.dataPath + "/Saves/";
-
-#else
-
-        folderPath = Application.persistentDataPath + "/Saves/";
-
-#endif
+        folderPath = root + "/Saves/" + profile + "/";
     }
 
     public static void Save(string data)
     {
 
+        try
+        {
+
 
 #if UNITY_STANDALONE || UNITY_EDITOR
-        File.WriteAllText(Path, data);
+            Helpers.SafeCreateDirectory(folderPath);
+            File.WriteAllText(Path, data);
 
 
 #elif UNITY_ANDROID
-        Helpers.SafeCreateDirectory(folderPath);
-        StreamWriter Writer = new StreamWriter(Path);
-        Writer.Write(data);
-        Writer.Flush();
-        Writer.Close();
+            Helpers.SafeCreateDirectory(folderPath);
+            StreamWriter Writer = new StreamWriter(Path);
+            Writer.Write(data);
+            Writer.Flush();
+            Writer.Close();
 #endif
 
+        }
+        catch (Exception)
+        {
+            throw;
+        }
 
     }
 
@@ -53,7 +73,6 @@ public class FileManager
 
         Debug.Log("Loading: " + Path);
 
-
         if (!File.Exists(Path))
         {
             Debug.Log("File not found: " + Path);
@@ -61,19 +80,47 @@ public class FileManager
         }
 
         data = File.ReadAllText(Path);
-#if UNITY_STANDALONE || UNITY_EDITOR
 
-#elif UNITY_ANDROID
-
-       /* var reader = new StreamReader(Path);
-        data = reader.ReadToEnd();
-        reader.Close();*/
-
-#else
-
-        return null;
-
-#endif
         return data;
     }
+
+    public static string LoadSettings()
+    {
+        string data;
+
+        if (!File.Exists(SettingsPath))
+        {
+            Debug.Log("Settings not found: " + SettingsPath);
+            return null;
+        }
+
+        data = File.ReadAllText(SettingsPath);
+
+        return data;
+    }
+
+    public static void SaveSettings(string data)
+    {
+#if UNITY_STANDALONE || UNITY_EDITOR
+        File.WriteAllText(SettingsPath, data);
+#elif UNITY_ANDROID
+        //Helpers.SafeCreateDirectory(folderPath);
+        StreamWriter Writer = new StreamWriter(SettingsPath);
+        Writer.Write(data);
+        Writer.Flush();
+        Writer.Close();
+#endif
+    }
+
+    private static void SaveFile()
+    {
+
+    }
+
+    private static void LoadFile()
+    {
+
+    }
+
+
 }

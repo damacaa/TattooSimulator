@@ -181,6 +181,7 @@ public class TattooManager : MonoBehaviour
             spawnedTattoos.Remove(selectedTattoo);
             Destroy(selectedTattoo.gameObject);
             UIManager.instance.HideSettings();
+            Save();
         }
     }
 
@@ -200,10 +201,24 @@ public class TattooManager : MonoBehaviour
     /////////////////////// THIS SHOULD BE ANOTHER SCRIPT
     [SerializeField]
     string profile = "data";
+    Settings settings;
 
     private void Start()
     {
-        FileManager.SetProfile(profile);
+        FileManager.Initialize();
+        string settingsData = FileManager.LoadSettings();
+        if (settingsData != null && settingsData != "")
+        {
+            settings = JsonUtility.FromJson<Settings>(settingsData);
+            if (settings.lastProfile != null)
+                profile = settings.lastProfile;
+        }
+        else
+        {
+            settings = new Settings();
+        }
+
+        SetProfile(profile);
         LoadData();
     }
 
@@ -211,11 +226,15 @@ public class TattooManager : MonoBehaviour
     {
         profile = s;
         FileManager.SetProfile(profile);
+        if (settings != null)
+            settings.lastProfile = profile;
     }
 
     List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
     public void LoadData()
     {
+        print("Loading "+profile);
+
         unableToLoadTattoos.Clear();
         Reset();
 
@@ -242,6 +261,7 @@ public class TattooManager : MonoBehaviour
             spawnedTattoos.Add(smartTattoo);
 
         }
+        Save();
     }
 
     private void Save()
@@ -262,6 +282,9 @@ public class TattooManager : MonoBehaviour
         string data = JsonUtility.ToJson(tattooList);
 
         FileManager.Save(data);
+
+        string settingsData = JsonUtility.ToJson(settings);
+        FileManager.SaveSettings(settingsData);
     }
 
 
@@ -270,6 +293,12 @@ public class TattooManager : MonoBehaviour
     class TattoList
     {
         public TattooInfo[] tattoos;
+    }
+
+    [System.Serializable]
+    class Settings
+    {
+        public string lastProfile;
     }
 
 }
