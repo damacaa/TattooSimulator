@@ -205,6 +205,7 @@ public class TattooManager : MonoBehaviour
 
     private void Start()
     {
+#if !UNITY_WEBGL
         FileManager.Initialize();
         string settingsData = FileManager.LoadSettings();
         if (settingsData != null && settingsData != "")
@@ -219,27 +220,34 @@ public class TattooManager : MonoBehaviour
         }
 
         SetProfile(profile);
+
         LoadData();
+#endif
     }
 
     public void SetProfile(string s)
     {
         profile = s;
+        UIManager.instance.UpdateProfile(profile);
         FileManager.SetProfile(profile);
         if (settings != null)
+        {
             settings.lastProfile = profile;
+            string settingsData = JsonUtility.ToJson(settings);
+            FileManager.SaveSettings(settingsData);
+        }
     }
 
     List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
     public void LoadData()
     {
-        print("Loading "+profile);
-
+#if !UNITY_WEBGL
         unableToLoadTattoos.Clear();
         Reset();
 
-        string data = FileManager.Load();
+        DesignManager.instance.LoadDesigns();
 
+        string data = FileManager.Load();
         if (data == null)
             return;
 
@@ -262,11 +270,13 @@ public class TattooManager : MonoBehaviour
 
         }
         Save();
+#endif
     }
 
     private void Save()
     {
-        print("Saving: " + FileManager.Path);
+#if !UNITY_WEBGL
+        print("Saving: " + FileManager.DataPath);
 
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
         foreach (SmartTattoo smartTattoo in spawnedTattoos)
@@ -285,6 +295,21 @@ public class TattooManager : MonoBehaviour
 
         string settingsData = JsonUtility.ToJson(settings);
         FileManager.SaveSettings(settingsData);
+#endif
+    }
+
+    public void DeleteProfile()
+    {
+        UIManager.instance.ShowDeleteConfirmatioWindow();
+    }
+
+    public void ConfirmDelete()
+    {
+        FileManager.DeleteCurrentProfile();
+        SetProfile("Default");
+        LoadData();
+        Save();
+        UIManager.instance.HideDeleteConfirmatioWindow();
     }
 
 

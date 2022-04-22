@@ -9,17 +9,25 @@ public class FileManager
 
     public static string root;
     public static string folderPath;
-    public static string fileName;
 
-    public static string Path
+    public static string DataPath
     {
-        get { return folderPath + fileName; }
+        get { return folderPath + "data.txt"; }
+    }
+
+    public static string ImageFolderPath
+    {
+        get {
+            string path = folderPath + "/images";
+            Helpers.SafeCreateDirectory(path);
+            return path; }
     }
 
     public static string SettingsPath
     {
         get { return root + "/settings.txt"; }
     }
+
 
     public static void Initialize()
     {
@@ -35,28 +43,46 @@ public class FileManager
 
     public static void SetProfile(string profile)
     {
-        fileName = profile + ".txt";
         folderPath = root + "/Saves/" + profile + "/";
     }
 
     public static void Save(string data)
     {
+        SaveFile(data, DataPath);
+    }
 
+    public static string Load()
+    {
+        return LoadFile(DataPath);
+    }
+
+    public static string LoadSettings()
+    {
+        return LoadFile(SettingsPath);
+    }
+
+    public static void SaveSettings(string data)
+    {
+        SaveFile(data, SettingsPath);
+    }
+
+    private static void SaveFile(string data, string path)
+    {
         try
         {
-
+            Helpers.SafeCreateDirectory(Directory.GetParent(path).ToString());
 
 #if UNITY_STANDALONE || UNITY_EDITOR
-            Helpers.SafeCreateDirectory(folderPath);
-            File.WriteAllText(Path, data);
 
+            File.WriteAllText(path, data);
 
 #elif UNITY_ANDROID
-            Helpers.SafeCreateDirectory(folderPath);
-            StreamWriter Writer = new StreamWriter(Path);
+
+            StreamWriter Writer = new StreamWriter(path);
             Writer.Write(data);
             Writer.Flush();
             Writer.Close();
+
 #endif
 
         }
@@ -64,63 +90,27 @@ public class FileManager
         {
             throw;
         }
-
     }
 
-    public static string Load()
+    private static string LoadFile(string _path)
     {
         string data;
 
-        Debug.Log("Loading: " + Path);
+        Debug.Log("Loading: " + _path);
 
-        if (!File.Exists(Path))
+        if (!File.Exists(_path))
         {
-            Debug.Log("File not found: " + Path);
+            Debug.Log("File not found: " + _path);
             return null;
         }
 
-        data = File.ReadAllText(Path);
+        data = File.ReadAllText(_path);
 
         return data;
     }
 
-    public static string LoadSettings()
+    internal static void DeleteCurrentProfile()
     {
-        string data;
-
-        if (!File.Exists(SettingsPath))
-        {
-            Debug.Log("Settings not found: " + SettingsPath);
-            return null;
-        }
-
-        data = File.ReadAllText(SettingsPath);
-
-        return data;
+        if (Directory.Exists(folderPath)) { Directory.Delete(folderPath, true); }
     }
-
-    public static void SaveSettings(string data)
-    {
-#if UNITY_STANDALONE || UNITY_EDITOR
-        File.WriteAllText(SettingsPath, data);
-#elif UNITY_ANDROID
-        //Helpers.SafeCreateDirectory(folderPath);
-        StreamWriter Writer = new StreamWriter(SettingsPath);
-        Writer.Write(data);
-        Writer.Flush();
-        Writer.Close();
-#endif
-    }
-
-    private static void SaveFile()
-    {
-
-    }
-
-    private static void LoadFile()
-    {
-
-    }
-
-
 }

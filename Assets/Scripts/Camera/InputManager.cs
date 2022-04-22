@@ -172,15 +172,23 @@ public class InputManager : MonoBehaviour
         Vector2 delta0 = Input.GetTouch(0).deltaPosition;
         Vector2 delta1 = Input.GetTouch(1).deltaPosition;
 
+        float currentDist = Vector2.Distance(touch0, touch1);
+        float previousDist = Vector2.Distance(touch0 - delta0, touch1 - delta1);
+        float difference = previousDist - currentDist;
+
         if (Vector2.Dot(delta0, delta1) < 0)//If deltas form an angle greater than 90 degrees
         {
-            float currentDist = Vector2.Distance(touch0, touch1);
-            float previousDist = Vector2.Distance(touch0 - delta0, touch1 - delta1);
-            float difference = previousDist - currentDist;
-
             if (difference < 50)
             {
                 CameraBehaviour.instance.Zoom(-difference * Time.deltaTime * pinchSensitivity);
+            }
+        }
+        else
+        {
+            Vector2 avgDelta = (delta0 + delta1) / 2f;
+            if (difference < 50)
+            {
+                CameraBehaviour.instance.MoveCenter(0.01f * avgDelta.x * Time.deltaTime, -0.01f *avgDelta.y * Time.deltaTime);
             }
         }
 
