@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -69,6 +70,7 @@ public class TattooManager : MonoBehaviour
 
         lastTattoo = g;
         currentTattooTexture = null;
+        selectedTattoo = null;
 
         HideCursor();
         UIManager.instance.HideSettings();
@@ -111,9 +113,14 @@ public class TattooManager : MonoBehaviour
     public void SelectTattoo(SmartTattoo tattoo)
     {
         selectedTattoo = tattoo;
+
         UIManager.instance.ShowSettings();
         UIManager.instance.SetSettings(0, tattoo.transform.localScale.x);
         StartCoroutine(AdjustTattoo());
+
+#if UNITY_EDITOR
+        Selection.activeObject = tattoo;
+#endif
     }
 
     IEnumerator AdjustTattoo()
@@ -125,6 +132,7 @@ public class TattooManager : MonoBehaviour
         float defaultZ = rot.z;
 
         bool hasChanges = false;
+        int framesWithoutChanges = 0;
         SmartTattoo t = selectedTattoo;
         while (selectedTattoo != null && selectedTattoo == t)
         {
@@ -156,6 +164,19 @@ public class TattooManager : MonoBehaviour
                 selectedTattoo.transform.localScale = new Vector3(size, size, 1);
                 selectedTattoo.AdjustScale();
             }
+
+            if (!hasChanges)
+            {
+                framesWithoutChanges++;
+                if (framesWithoutChanges == 60)
+                {
+                    print("Go");
+                    selectedTattoo.Begin();
+                }
+            }
+            else
+                framesWithoutChanges = 0;
+
             yield return null;
         }
 
@@ -184,6 +205,25 @@ public class TattooManager : MonoBehaviour
             Save();
         }
     }
+
+    internal void MoveTattoo(Vector3 pos, Vector3 normal)
+    {
+        selectedTattoo.transform.position = pos;
+        selectedTattoo.transform.forward = -normal;
+        selectedTattoo.Reset();
+    }
+
+    internal void StopMovingTattoo()
+    {
+        if (selectedTattoo)
+            selectedTattoo.Begin();
+    }
+
+    internal void PlaceTattoo()
+    {
+        throw new NotImplementedException();
+    }
+
 
     public void Reset()
     {

@@ -7,20 +7,21 @@ using UnityEngine.UI;
 public class InputManager : MonoBehaviour
 {
     public static InputManager instance;
-    public bool choosingWhereToBuild = false; //A structure card has been selected
-    bool zooming = false;//Is zooming
-    bool isMobile = false;
+
     public bool forceMobile = false;
+    bool isMobile = false;
     public Vector3 offset;
-    public Vector3 mousePosition;
-    Vector3 lastMousePosition;
     public Color wrongColor;
+    public float holdTime = 0.5f;
+
+    bool holdingTattoo = false;
+    bool movingTattoo = false;
+    bool zooming = false;//Is zooming
+
+    public Vector3 mousePosition;
 
     [SerializeField]
     private float pinchSensitivity = 15.0f;
-    //Gameobject that will be placed where structure is about to be built
-
-
 
     private void Awake()
     {
@@ -47,9 +48,8 @@ public class InputManager : MonoBehaviour
         if (Helpers.IsOverUI())
             return;
 
-        CameraBehaviour.instance.Rotate(-Input.GetAxis("Horizontal") * Time.deltaTime, -Input.GetAxis("Vertical") * Time.deltaTime);
+        //CameraBehaviour.instance.Rotate(-Input.GetAxis("Horizontal") * Time.deltaTime, -Input.GetAxis("Vertical") * Time.deltaTime);
 
-        lastMousePosition = mousePosition;
         if (isMobile && Input.touchCount > 0)
         {
             mousePosition = Input.touches[0].position;
@@ -69,7 +69,7 @@ public class InputManager : MonoBehaviour
         }
 
         //Click release
-        if (Input.GetMouseButtonUp(0) && !isMobile)
+        if (Input.GetMouseButtonUp(0))
         {
             MouseUp();
         }
@@ -113,7 +113,16 @@ public class InputManager : MonoBehaviour
 
     private void MouseDrag()
     {
-        if (!zooming && Input.mousePosition.x <= Screen.width * 0.9f)
+        if (movingTattoo)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+            {
+                TattooManager.instance.MoveTattoo(hit.point, hit.normal);
+            }
+        }
+        else if (!zooming)
         {
             //If not zooming, camera will be moved
             if (Mathf.Abs(Input.GetAxis("Mouse X")) > 30 || Mathf.Abs(Input.GetAxis("Mouse Y")) > 30)
@@ -125,19 +134,20 @@ public class InputManager : MonoBehaviour
 
     private void MouseDown()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
         {
             switch (hit.collider.tag)
             {
                 case "Tattoo":
-                    if (!hit.collider.GetComponent<SmartTattoo>().enabled)
+                    SmartTattoo t = hit.collider.GetComponent<SmartTattoo>();
+                    if (!t.enabled)
                         TattooManager.instance.PrintTattoo(hit.point, hit.normal);
+                    StartCoroutine(CheckHold(mousePosition, t));
                     break;
                 case "Man":
                     TattooManager.instance.PrintTattoo(hit.point, hit.normal);
-                    TattooManager.instance.Deselect();
                     break;
                 default:
                     TattooManager.instance.Deselect();
@@ -146,14 +156,44 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    IEnumerator CheckHold(Vector3 initialPos, SmartTattoo tattoo)
+    {
+        print("Check hold");
+        float t = 0;
+        Vector3 lastPos = initialPos;
+        holdingTattoo = true;
+        float step = holdTime / 10f;
+        while (t < holdTime)
+        {
+            if (!holdingTattoo || (mousePosition - lastPos).magnitude > 10f)
+            {
+                print("Hold cancelled");
+                TattooManager.instance.SelectTattoo(tattoo);
+                CameraBehaviour.instance.MoveTargetTo(tattoo.transform.position);
+                yield break;
+            }
+            lastPos = mousePosition;
+            t += step;
+            yield return new WaitForSeconds(step);
+        }
+
+        movingTattoo = true;
+        TattooManager.instance.SelectTattoo(tattoo);
+        yield return null;
+    }
+
     public void MouseUp()
     {
-
+        print("Mouse up");
+        if (movingTattoo)
+            TattooManager.instance.StopMovingTattoo();
+        movingTattoo = false;
+        holdingTattoo = false;
     }
 
     bool CheckPinch()
     {
-        if (choosingWhereToBuild)
+        if (movingTattoo)
             return false;
 
         int activeTouches = Input.touchCount;
@@ -188,7 +228,7 @@ public class InputManager : MonoBehaviour
             Vector2 avgDelta = (delta0 + delta1) / 2f;
             if (difference < 50)
             {
-                CameraBehaviour.instance.MoveCenter(0.01f * avgDelta.x * Time.deltaTime, -0.01f *avgDelta.y * Time.deltaTime);
+                CameraBehaviour.instance.MoveCenter(0.01f * avgDelta.x * Time.deltaTime, -0.01f * avgDelta.y * Time.deltaTime);
             }
         }
 

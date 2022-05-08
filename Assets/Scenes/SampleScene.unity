@@ -133,6 +133,8 @@ GameObject:
   m_Component:
   - component: {fileID: 59862415}
   - component: {fileID: 59862416}
+  - component: {fileID: 59862418}
+  - component: {fileID: 59862417}
   m_Layer: 0
   m_Name: TattooManager
   m_TagString: Untagged
@@ -171,6 +173,30 @@ MonoBehaviour:
   cursor: {fileID: 1824908020}
   spawnedTattoos: []
   profile: Default
+--- !u!114 &59862417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59862414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c655920a6b99acd49a268038788ccf39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &59862418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59862414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb5ea1fbd78cf5744bfdb17d109fb499, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &64194946
 GameObject:
   m_ObjectHideFlags: 0
@@ -4869,11 +4895,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 832535f445314ff4bb2e679af324243f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  choosingWhereToBuild: 0
-  forceMobile: 1
+  forceMobile: 0
   offset: {x: 0, y: 0, z: 0}
-  mousePosition: {x: 0, y: 0, z: 0}
   wrongColor: {r: 0.7264151, g: 0.2, b: 0.22272162, a: 1}
+  holdTime: 0.5
+  mousePosition: {x: 0, y: 0, z: 0}
   pinchSensitivity: 1
 --- !u!1 &1875102140
 GameObject:

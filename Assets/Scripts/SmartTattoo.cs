@@ -102,12 +102,16 @@ public abstract class SmartTattoo : MonoBehaviour
         float step = Time.fixedDeltaTime / accuracy;
         Vector3 pos = transform.position;
 
-        while (Physics.CheckBox(pos, new Vector3(transform.localScale.x, transform.localScale.y, 0.05f) / 4f, transform.rotation))
+        bool inPlace = false;
+        //Alejarse si está dentro
+        while (Physics.CheckBox(pos, new Vector3(transform.localScale.x, transform.localScale.y, step) / 2f, transform.rotation))
         {
             pos -= step * transform.forward;
+            inPlace = true;
         }
 
-        while (!Physics.CheckBox(pos + step * transform.forward, new Vector3(transform.localScale.x, transform.localScale.y, 0.05f) / 4f, transform.rotation))
+        //Acercarse si está lejos
+        while (!inPlace && !Physics.CheckBox(pos + step * transform.forward, new Vector3(transform.localScale.x, transform.localScale.y, step) / 2f, transform.rotation))
         {
             pos += step * transform.forward;
         }
@@ -374,11 +378,7 @@ public abstract class SmartTattoo : MonoBehaviour
 
     protected void OnMouseDown()
     {
-        CameraBehaviour.instance.MoveTargetTo(transform.position);
-        TattooManager.instance.SelectTattoo(this);
-#if UNITY_EDITOR
-        Selection.activeObject = this;
-#endif
+
     }
 
 #if UNITY_EDITOR
