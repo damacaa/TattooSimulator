@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class TattooManager : MonoBehaviour
 {
@@ -15,7 +16,6 @@ public class TattooManager : MonoBehaviour
         HideCursor();
     }
 
-
     [SerializeField]
     GameObject tattooPrefab;
     [SerializeField]
@@ -24,29 +24,16 @@ public class TattooManager : MonoBehaviour
     Texture currentTattooTexture;
     GameObject lastTattoo;
 
-    SmartTattoo selectedTattoo;
     public List<SmartTattoo> spawnedTattoos = new List<SmartTattoo>();
 
-    float angle = 0;
-    float size = 0.1f;
 
-    public void SetAngle(float a)
+    public void SetTexture(string s)
     {
-        angle = -a;
-    }
-
-    public void SetSize(float s)
-    {
-        size = s;
-    }
-
-    public void SetTexture(Texture t)
-    {
-        currentTattooTexture = t;
+        currentTattooTexture = DesignManager.instance.GetDesign(s);
         UIManager.instance.ShowSettings();
     }
 
-    public void PrintTattoo(Vector3 pos, Vector3 normal)
+    public void PrintTattoo(Vector3 pos, Vector3 forward)
     {
         if (!currentTattooTexture)
         {
@@ -57,24 +44,15 @@ public class TattooManager : MonoBehaviour
         //pos = new Vector3(0, 1.2f, -1);
         //normal = new Vector3(0, 0, -1);
 
-        GameObject g = GameObject.Instantiate(tattooPrefab, pos, Quaternion.LookRotation(-normal, Camera.main.transform.up));
-
-        Vector3 rot = g.transform.rotation.eulerAngles;
-        rot.z += angle;
-        g.transform.rotation = Quaternion.Euler(rot);
-        g.transform.localScale = new Vector3(size, size, 1);
-
-        SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
-        smartTattoo.texture = currentTattooTexture;
-        spawnedTattoos.Add(smartTattoo);
+        Vector3 rot = Quaternion.LookRotation(forward, Camera.main.transform.up).eulerAngles;
+        GameObject g = SpawnTattoo(pos, rot, currentTattooTexture, 0.1f).gameObject;
 
         lastTattoo = g;
         currentTattooTexture = null;
-        selectedTattoo = null;
 
         HideCursor();
         UIManager.instance.HideSettings();
-        Save();
+        ProfileManager.instance.Save();
 
 #if UNITY_EDITOR
         Selection.activeObject = g;
@@ -90,8 +68,8 @@ public class TattooManager : MonoBehaviour
         cursor.transform.position = pos;
         cursor.transform.forward = -normal;
         Vector3 rot = cursor.transform.rotation.eulerAngles;
-        rot.z = angle;
-        cursor.transform.localScale = new Vector3(size, size, 0.05f);
+        rot.z = TattooEditor.instance.angle;
+        cursor.transform.localScale = new Vector3(TattooEditor.instance.size, TattooEditor.instance.size, 0.05f);
         cursor.transform.rotation = Quaternion.Euler(rot);
     }
 
@@ -106,128 +84,24 @@ public class TattooManager : MonoBehaviour
         {
             spawnedTattoos.Remove(lastTattoo.GetComponent<SmartTattoo>());
             Destroy(lastTattoo);
-            Save();
+            ProfileManager.instance.Save();
         }
     }
 
-    public void SelectTattoo(SmartTattoo tattoo)
+
+    public void DeleteTattoo(SmartTattoo tattoo)
     {
-        selectedTattoo = tattoo;
-
-        UIManager.instance.ShowSettings();
-        UIManager.instance.SetSettings(0, tattoo.transform.localScale.x);
-        StartCoroutine(AdjustTattoo());
-
-#if UNITY_EDITOR
-        Selection.activeObject = tattoo;
-#endif
+        spawnedTattoos.Remove(tattoo);
+        Destroy(tattoo.gameObject);
     }
 
-    IEnumerator AdjustTattoo()
-    {
-        float lastSize = size;
-        float lastAngle = angle;
 
-        Vector3 rot = selectedTattoo.transform.rotation.eulerAngles;
-        float defaultZ = rot.z;
-
-        bool hasChanges = false;
-        int framesWithoutChanges = 0;
-        SmartTattoo t = selectedTattoo;
-        while (selectedTattoo != null && selectedTattoo == t)
-        {
-            //Vector3 rot = selectedTattoo.transform.rotation.eulerAngles;
-            //rot.z += angle;
-            //g.transform.rotation = Quaternion.Euler(rot);
-            if (angle != lastAngle)
-            {
-                if (!hasChanges)
-                {
-                    selectedTattoo.Reset();
-                    hasChanges = true;
-                }
-
-                lastAngle = angle;
-                rot.z = defaultZ + angle;
-                selectedTattoo.transform.rotation = Quaternion.Euler(rot);
-            }
-
-            if (size != lastSize)
-            {
-                if (!hasChanges)
-                {
-                    selectedTattoo.Reset();
-                    hasChanges = true;
-                }
-
-                lastSize = size;
-                selectedTattoo.transform.localScale = new Vector3(size, size, 1);
-                selectedTattoo.AdjustScale();
-            }
-
-            if (!hasChanges)
-            {
-                framesWithoutChanges++;
-                if (framesWithoutChanges == 60)
-                {
-                    print("Go");
-                    selectedTattoo.Begin();
-                }
-            }
-            else
-                framesWithoutChanges = 0;
-
-            yield return null;
-        }
-
-        if (hasChanges && t)
-        {
-            t.Begin();
-            Save();
-        }
-
-        yield return null;
-    }
-
-    public void Deselect()
-    {
-        selectedTattoo = null;
-        UIManager.instance.HideSettings();
-    }
-
-    public void DeleteSelected()
-    {
-        if (selectedTattoo)
-        {
-            spawnedTattoos.Remove(selectedTattoo);
-            Destroy(selectedTattoo.gameObject);
-            UIManager.instance.HideSettings();
-            Save();
-        }
-    }
-
-    internal void MoveTattoo(Vector3 pos, Vector3 normal)
-    {
-        selectedTattoo.transform.position = pos;
-        selectedTattoo.transform.forward = -normal;
-        selectedTattoo.Reset();
-    }
-
-    internal void StopMovingTattoo()
-    {
-        if (selectedTattoo)
-            selectedTattoo.Begin();
-    }
-
-    internal void PlaceTattoo()
-    {
-        throw new NotImplementedException();
-    }
 
 
     public void Reset()
     {
-        selectedTattoo = null;
+        TattooEditor.instance.Reset();
+
         currentTattooTexture = null;
         lastTattoo = null;
         foreach (SmartTattoo t in spawnedTattoos)
@@ -238,132 +112,37 @@ public class TattooManager : MonoBehaviour
         UIManager.instance.HideSettings();
     }
 
+    public SmartTattoo SpawnTattoo(Vector3 pos, Vector3 rotation, Texture texture, float size)
+    {
+        GameObject g = GameObject.Instantiate(tattooPrefab, pos, Quaternion.Euler(rotation));
+
+        g.transform.localScale = new Vector3(size, size, 1);
+
+        SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
+        smartTattoo.texture = texture;
+        spawnedTattoos.Add(smartTattoo);
+
+        return smartTattoo;
+    }
+
+    internal void DeleteTattoosWithDesign(string design)
+    {
+        Texture t = DesignManager.instance.GetDesign(design);
+
+        List<SmartTattoo> tattosToRemove = spawnedTattoos.FindAll(HasSameDesing);
+
+        foreach (var s in tattosToRemove)
+        {
+            Destroy(s.gameObject);
+            spawnedTattoos.Remove(s);
+        }
+
+        bool HasSameDesing(SmartTattoo st)
+        {
+            return st.texture = t;
+        }
+    }
+
     /////////////////////// THIS SHOULD BE ANOTHER SCRIPT
-    [SerializeField]
-    string profile = "data";
-    Settings settings;
-
-    private void Start()
-    {
-#if !UNITY_WEBGL
-        FileManager.Initialize();
-        string settingsData = FileManager.LoadSettings();
-        if (settingsData != null && settingsData != "")
-        {
-            settings = JsonUtility.FromJson<Settings>(settingsData);
-            if (settings.lastProfile != null)
-                profile = settings.lastProfile;
-        }
-        else
-        {
-            settings = new Settings();
-        }
-
-        SetProfile(profile);
-
-        LoadData();
-#endif
-    }
-
-    public void SetProfile(string s)
-    {
-        profile = s;
-        UIManager.instance.UpdateProfile(profile);
-        FileManager.SetProfile(profile);
-        if (settings != null)
-        {
-            settings.lastProfile = profile;
-            string settingsData = JsonUtility.ToJson(settings);
-            FileManager.SaveSettings(settingsData);
-        }
-    }
-
-    List<TattooInfo> unableToLoadTattoos = new List<TattooInfo>();
-    public void LoadData()
-    {
-#if !UNITY_WEBGL
-        unableToLoadTattoos.Clear();
-        Reset();
-
-        DesignManager.instance.LoadDesigns();
-
-        string data = FileManager.Load();
-        if (data == null)
-            return;
-
-        TattoList tattoList = JsonUtility.FromJson<TattoList>(data);
-        foreach (TattooInfo t in tattoList.tattoos)
-        {
-            Texture tex;
-            if (!DesignManager.instance.textures.TryGetValue(t.texture, out tex))
-            {
-                unableToLoadTattoos.Add(t);
-                print("Unable to load " + t.texture);
-                continue;
-            }
-
-            GameObject g = GameObject.Instantiate(tattooPrefab, t.position, Quaternion.Euler(t.euler));
-            g.transform.localScale = new Vector3(t.size, t.size, 1);
-            SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
-            smartTattoo.texture = tex;
-            spawnedTattoos.Add(smartTattoo);
-
-        }
-        Save();
-#endif
-    }
-
-    private void Save()
-    {
-#if !UNITY_WEBGL
-        print("Saving: " + FileManager.DataPath);
-
-        List<TattooInfo> tattooInfos = new List<TattooInfo>();
-        foreach (SmartTattoo smartTattoo in spawnedTattoos)
-        {
-            tattooInfos.Add(smartTattoo.GetInfo());
-        }
-
-        tattooInfos.AddRange(unableToLoadTattoos);
-
-        TattoList tattooList = new TattoList();
-        tattooList.tattoos = tattooInfos.ToArray();
-
-        string data = JsonUtility.ToJson(tattooList);
-
-        FileManager.Save(data);
-
-        string settingsData = JsonUtility.ToJson(settings);
-        FileManager.SaveSettings(settingsData);
-#endif
-    }
-
-    public void DeleteProfile()
-    {
-        UIManager.instance.ShowDeleteConfirmatioWindow();
-    }
-
-    public void ConfirmDelete()
-    {
-        FileManager.DeleteCurrentProfile();
-        SetProfile("Default");
-        LoadData();
-        Save();
-        UIManager.instance.HideDeleteConfirmatioWindow();
-    }
-
-
-
-    [System.Serializable]
-    class TattoList
-    {
-        public TattooInfo[] tattoos;
-    }
-
-    [System.Serializable]
-    class Settings
-    {
-        public string lastProfile;
-    }
 
 }

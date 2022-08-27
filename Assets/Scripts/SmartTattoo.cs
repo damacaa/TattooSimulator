@@ -449,6 +449,7 @@ public class TattooInfo
     public string texture;
     public Vector3 position, euler;
     public float size;
+    public float angle;
 }
 
 

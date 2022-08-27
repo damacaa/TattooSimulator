@@ -85,6 +85,12 @@ public class CameraBehaviour : MonoBehaviour
         _desiredDistanceFromTarget = Mathf.Clamp(_desiredDistanceFromTarget - (amount * scrollSensitivity) * _desiredDistanceFromTarget, minDistance, maxDistance);
     }
 
+    public void SetDistance(float distance)
+    {
+        _desiredDistanceFromTarget = Mathf.Clamp(distance, minDistance, maxDistance);
+
+    }
+
     public void Rotate(float mouseX, float mouseY)
     {
         if (freeMovement)

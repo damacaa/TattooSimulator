@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static NativeGallery;
 using SimpleFileBrowser;
+using System;
 
 public class DesignManager : MonoBehaviour
 {
@@ -30,8 +31,6 @@ public class DesignManager : MonoBehaviour
 
     string imageFolderPath;
 
-
-
     public void LoadDesigns()
     {
         print(buttons.Count + " buttons deleted");
@@ -44,7 +43,7 @@ public class DesignManager : MonoBehaviour
         textures = new Dictionary<string, Texture>();
 
 #if !UNITY_WEBGL || UNITY_EDITOR
-        imageFolderPath = FileManager.ImageFolderPath;
+        imageFolderPath = ProfileManager.instance.fileManager.ImageFolderPath;
 
         Resources.UnloadUnusedAssets();
 
@@ -72,6 +71,12 @@ public class DesignManager : MonoBehaviour
 
 #endif
     }
+
+    private static Texture2D GetEmptyTexture(int w, int h)
+    {
+        return new Texture2D(w, h, TextureFormat.RGBA32, false);
+    }
+
     public static Texture2D LoadPNG(string filePath)
     {
 
@@ -81,7 +86,7 @@ public class DesignManager : MonoBehaviour
         if (File.Exists(filePath))
         {
             fileData = File.ReadAllBytes(filePath);
-            tex = new Texture2D(1, 1);
+            tex = GetEmptyTexture(1, 1);
             tex.LoadImage(fileData); //..this will auto-resize the texture dimensions.
             //tex.alphaIsTransparency = true;
             //tex.anisoLevel = 8;
@@ -91,12 +96,18 @@ public class DesignManager : MonoBehaviour
 
     void AddDesign(Texture2D tex, string name)
     {
+        while (textures.ContainsKey(name))
+        {
+            name += "_copy";
+        }
+
         tex.name = name;
         textures[name] = tex;
         Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
 
+
         GameObject g = GameObject.Instantiate(buttonPrefab, content);
-        g.GetComponent<TattooSelectionButton>().SetSprite(s);
+        g.GetComponent<TattooSelectionButton>().SetSprite(s, name);
         g.transform.SetSiblingIndex(g.transform.GetSiblingIndex() - 1);
         buttons.Add(g);
 
@@ -105,6 +116,18 @@ public class DesignManager : MonoBehaviour
         File.WriteAllBytes(imageFolderPath + "/" + name + ".png", bytes);
         //Resources.UnloadUnusedAssets();
 #endif
+    }
+
+    internal Texture GetDesign(string design)
+    {
+        return textures[design];
+    }
+
+    public void DeleteDesign(string design)
+    {
+        TattooManager.instance.DeleteTattoosWithDesign(design);
+        File.Delete(imageFolderPath + "/" + design + ".png");
+        Resources.UnloadUnusedAssets();
     }
 
     public void RequestImage()
@@ -210,7 +233,7 @@ public class DesignManager : MonoBehaviour
                 byte[] bytes = FileBrowserHelpers.ReadBytesFromFile(FileBrowser.Result[i]);
 
                 // Create a new Texture (or use some old one?)
-                Texture2D tex = new Texture2D(1, 1); // does the size matter? hehe
+                Texture2D tex = GetEmptyTexture(1, 1); // does the size matter? hehe
                 if (tex.LoadImage(bytes))
                 {
                     string name = Path.GetFileNameWithoutExtension(FileBrowser.Result[i]);
@@ -220,4 +243,6 @@ public class DesignManager : MonoBehaviour
             }
         }
     }
+
+    
 }

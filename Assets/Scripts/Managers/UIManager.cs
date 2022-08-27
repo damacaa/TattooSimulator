@@ -20,6 +20,8 @@ public class UIManager : MonoBehaviour
     GameObject settings;
     [SerializeField]
     GameObject selector;
+    [SerializeField]
+    GameObject profileSelectorWindow;
 
     [SerializeField]
     Slider angleSlider;
@@ -29,6 +31,12 @@ public class UIManager : MonoBehaviour
     TMP_InputField profileSelector;
     [SerializeField]
     GameObject deleteConfirmationWindow;
+
+    internal void showAvailableProfiles(string[] availableProfiles)
+    {
+        ProfileSelector profileSelector = profileSelectorWindow.GetComponent<ProfileSelector>();
+        profileSelector.showProfiles(availableProfiles);
+    }
 
     void Start()
     {
@@ -49,6 +57,7 @@ public class UIManager : MonoBehaviour
     public void HideSettings()
     {
         settings.SetActive(false);
+        SetSettings(0, 0.1f);
     }
 
     public void SetSettings(float angle, float size)
@@ -70,5 +79,12 @@ public class UIManager : MonoBehaviour
     public void HideDeleteConfirmatioWindow()
     {
         deleteConfirmationWindow.SetActive(false);
+    }
+
+    public void CloseTattooSelector()
+    {
+        UI.SetActive(true);
+        //settings.SetActive(false);
+        selector.SetActive(false);
     }
 }

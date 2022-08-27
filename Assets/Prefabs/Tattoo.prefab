@@ -102,7 +102,7 @@ MonoBehaviour:
   accuracy: 5
   divisions: 15
   thickness: 0.001
-  nodeMass: 0.001
+  nodeMass: 0.0001
   stiffness: 3
   removeEmptySpaces: 1
 --- !u!64 &2160650940489686434
