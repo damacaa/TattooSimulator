@@ -17,6 +17,9 @@ public class ProfileButton : MonoBehaviour
 
     public void SelectProfile()
     {
-
+        print(profileName);
+        ProfileManager.instance.SetProfile(profileName);
+        ProfileManager.instance.LoadData();
+        UIManager.instance.
     }
 }

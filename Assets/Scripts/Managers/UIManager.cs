@@ -34,8 +34,14 @@ public class UIManager : MonoBehaviour
 
     internal void showAvailableProfiles(string[] availableProfiles)
     {
+        profileSelectorWindow.SetActive(true);
         ProfileSelector profileSelector = profileSelectorWindow.GetComponent<ProfileSelector>();
         profileSelector.showProfiles(availableProfiles);
+    }
+
+    internal void hideAvailableProfiles()
+    {
+        profileSelectorWindow.SetActive(false);
     }
 
     void Start()
