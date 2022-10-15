@@ -20,6 +20,6 @@ public class ProfileButton : MonoBehaviour
         print(profileName);
         ProfileManager.instance.SetProfile(profileName);
         ProfileManager.instance.LoadData();
-        UIManager.instance.
+        //UIManager.instance.//Forgot what I was going to do
     }
 }
