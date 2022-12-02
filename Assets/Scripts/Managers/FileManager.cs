@@ -6,58 +6,62 @@ using UnityEngine;
 
 public class FileManager
 {
-    public string root
+    #region SINGLETON
+    static FileManager _instance;
+    public static FileManager Instance
     {
         get
         {
-#if UNITY_STANDALONE || UNITY_EDITOR
-            return Application.dataPath;
-#else
-            return Application.persistentDataPath;
-#endif
+            if (_instance == null)
+                _instance = new FileManager();
+
+            return _instance;
         }
     }
-    public string currentProfileFolder;
+    #endregion
 
-    public string DataPath
+    #region VARIABLES
+    string _root;
+    string _currentProfileFolder;
+
+    public string CurrentProfileDataPath
     {
-        get { return currentProfileFolder + "data.txt"; }
+        get { return $"{_currentProfileFolder}data.txt"; }
     }
 
     public string ImageFolderPath
     {
         get
         {
-            string path = currentProfileFolder + "/images";
+            string path = $"{_currentProfileFolder}/images";
             Helpers.SafeCreateDirectory(path);
             return path;
         }
     }
 
-    public string SettingsPath
+    string SettingsPath
     {
-        get { return root + "/settings.txt"; }
+        get { return $"{_root}/settings.txt"; }
     }
+    #endregion
 
-    public FileManager()
+    // Private constructor forces to use singleton
+    private FileManager()
     {
-        Initialize();
-    }
 
-    public void Initialize()
-    {
-        Helpers.SafeCreateDirectory(root + "/Saves");
-    }
+#if UNITY_STANDALONE || UNITY_EDITOR
+        _root = Application.dataPath;
+#else
+        _root =  Application.persistentDataPath;
+#endif
 
-    public void SetProfile(string profile)
-    {
-        currentProfileFolder = root + "/Saves/" + profile + "/";
+        Helpers.SafeCreateDirectory($"{_root}/Saves");
     }
 
     public string[] GetAllAvailableProfiles()
     {
-        string[] names = Directory.GetDirectories(root + "/Saves/", "*", SearchOption.TopDirectoryOnly);
-        int offset = (root + "/Saves/").Length;
+        string[] names = Directory.GetDirectories($"{_root}/Saves/", "*", SearchOption.TopDirectoryOnly);
+        int offset = ($"{_root}/Saves/").Length;
         for (int i = 0; i < names.Length; i++)
         {
             names[i] = names[i].Substring(offset);
@@ -66,19 +70,24 @@ public class FileManager
         return names;
     }
 
-    public void Save(string data)
+    public void SetCurrentProfile(string profile)
     {
-        SaveFile(data, DataPath);
+        _currentProfileFolder = $"{_root}/Saves/{profile}/";
     }
 
-    public string Load()
+    public void DeleteCurrentProfile()
     {
-        return LoadFile(DataPath);
+        if (Directory.Exists(_currentProfileFolder)) { Directory.Delete(_currentProfileFolder, true); }
     }
 
-    public string LoadSettings()
+    public void SaveData(string data)
     {
-        return LoadFile(SettingsPath);
+        SaveFile(data, CurrentProfileDataPath);
+    }
+
+    public string LoadData()
+    {
+        return LoadFile(CurrentProfileDataPath);
     }
 
     public void SaveSettings(string data)
@@ -86,7 +95,12 @@ public class FileManager
         SaveFile(data, SettingsPath);
     }
 
-    private static void SaveFile(string data, string path)
+    public string LoadSettings()
+    {
+        return LoadFile(SettingsPath);
+    }
+
+    void SaveFile(string data, string path)
     {
         try
         {
@@ -112,25 +126,20 @@ public class FileManager
         }
     }
 
-    private static string LoadFile(string _path)
+    string LoadFile(string _path)
     {
         string data;
 
-        Debug.Log("Loading: " + _path);
+        Debug.Log($"Loading: {_path}");
 
         if (!File.Exists(_path))
         {
-            Debug.Log("File not found: " + _path);
+            Debug.Log($"File not found: {_path}");
             return null;
         }
 
         data = File.ReadAllText(_path);
 
         return data;
-    }
-
-    internal void DeleteCurrentProfile()
-    {
-        if (Directory.Exists(currentProfileFolder)) { Directory.Delete(currentProfileFolder, true); }
     }
 }

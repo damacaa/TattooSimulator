@@ -11,8 +11,6 @@ public class ProfileManager : MonoBehaviour
         instance = this;
     }
 
-    public FileManager fileManager;
-
     [SerializeField]
     string profile = "data";
     Settings settings;
@@ -20,13 +18,11 @@ public class ProfileManager : MonoBehaviour
     private void Start()
     {
 #if !UNITY_WEBGL
-        //fileManager.Initialize();
-        fileManager = new FileManager();
 
-        string[] availableProfiles = fileManager.GetAllAvailableProfiles();
+        string[] availableProfiles = FileManager.Instance.GetAllAvailableProfiles();
         UIManager.instance.showAvailableProfiles(availableProfiles);
 
-        string settingsData = fileManager.LoadSettings();
+        string settingsData = FileManager.Instance.LoadSettings();
         if (settingsData != null && settingsData != "")
         {
             settings = JsonUtility.FromJson<Settings>(settingsData);
@@ -48,12 +44,12 @@ public class ProfileManager : MonoBehaviour
     {
         profile = s;
         UIManager.instance.UpdateProfile(profile);
-        fileManager.SetProfile(profile);
+        FileManager.Instance.SetCurrentProfile(profile);
         if (settings != null)
         {
             settings.lastProfile = profile;
             string settingsData = JsonUtility.ToJson(settings);
-            fileManager.SaveSettings(settingsData);
+            FileManager.Instance.SaveSettings(settingsData);
         }
     }
 
@@ -66,7 +62,7 @@ public class ProfileManager : MonoBehaviour
 
         DesignManager.instance.LoadDesigns();
 
-        string data = fileManager.Load();
+        string data = FileManager.Instance.LoadData();
         if (data == null)
             return;
 
@@ -90,7 +86,7 @@ public class ProfileManager : MonoBehaviour
     public void Save()
     {
 #if !UNITY_WEBGL
-        print("Saving: " + fileManager.DataPath);
+        print("Saving: " + FileManager.Instance.CurrentProfileDataPath);
 
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
         foreach (SmartTattoo smartTattoo in TattooManager.instance.spawnedTattoos)
@@ -105,10 +101,10 @@ public class ProfileManager : MonoBehaviour
 
         string data = JsonUtility.ToJson(tattooList);
 
-        fileManager.Save(data);
+        FileManager.Instance.SaveData(data);
 
         string settingsData = JsonUtility.ToJson(settings);
-        fileManager.SaveSettings(settingsData);
+        FileManager.Instance.SaveSettings(settingsData);
 #endif
     }
 
@@ -119,7 +115,7 @@ public class ProfileManager : MonoBehaviour
 
     public void ConfirmDelete()
     {
-        fileManager.DeleteCurrentProfile();
+        FileManager.Instance.DeleteCurrentProfile();
         SetProfile("Default");
         LoadData();
         Save();

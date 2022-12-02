@@ -43,7 +43,7 @@ public class DesignManager : MonoBehaviour
         textures = new Dictionary<string, Texture>();
 
 #if !UNITY_WEBGL || UNITY_EDITOR
-        imageFolderPath = ProfileManager.instance.fileManager.ImageFolderPath;
+        imageFolderPath = FileManager.Instance.ImageFolderPath;
 
         Resources.UnloadUnusedAssets();
 
