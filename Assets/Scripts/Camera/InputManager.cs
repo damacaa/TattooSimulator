@@ -145,8 +145,6 @@ public class InputManager : MonoBehaviour
 
     private void MouseDown()
     {
-        TattooEditor.instance.Deselect();
-
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
@@ -160,13 +158,18 @@ public class InputManager : MonoBehaviour
                     StartCoroutine(CheckHold(mousePosition, t));
                     break;
                 case "Man":
-                    TattooManager.instance.PrintTattoo(hit.point, -hit.normal);
+                    if (forwardIsNormal)
+                        TattooManager.instance.PrintTattoo(hit.point, -hit.normal);
+                    else
+                        TattooManager.instance.PrintTattoo(hit.point, ray.direction);
                     break;
                 default:
 
                     break;
             }
         }
+
+        TattooEditor.instance.Deselect();
     }
 
     IEnumerator CheckHold(Vector3 initialPos, SmartTattoo tattoo)

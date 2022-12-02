@@ -7,15 +7,21 @@ public class TattooEditor : MonoBehaviour
 {
     public static TattooEditor instance;
 
+    SmartTattoo selectedTattoo;
+
+
     private void Awake()
     {
         instance = this;
     }
 
-    SmartTattoo selectedTattoo;
-
     public float angle = 0;
     public float size = 0.1f;
+
+    private void Start()
+    {    
+        UIManager.instance.SetSettings(angle, size);
+    }
 
     public void SetAngle(float a)
     {
@@ -32,7 +38,7 @@ public class TattooEditor : MonoBehaviour
         selectedTattoo = tattoo;
 
         UIManager.instance.ShowSettings();
-        UIManager.instance.SetSettings(0, tattoo.transform.localScale.x);
+        UIManager.instance.SetSettings(tattoo.Angle, tattoo.Size);
         StartCoroutine(AdjustTattoo());
 
 #if UNITY_EDITOR
@@ -65,8 +71,7 @@ public class TattooEditor : MonoBehaviour
                 }
 
                 lastAngle = angle;
-                rot.z = defaultZ + angle;
-                selectedTattoo.transform.rotation = Quaternion.Euler(rot);
+                selectedTattoo.Angle = angle;
             }
 
             if (size != lastSize)
@@ -78,8 +83,7 @@ public class TattooEditor : MonoBehaviour
                 }
 
                 lastSize = size;
-                selectedTattoo.transform.localScale = new Vector3(size, size, 1);
-                selectedTattoo.AdjustScale();
+                selectedTattoo.Size = size;
             }
 
             if (!hasChanges)
@@ -127,7 +131,9 @@ public class TattooEditor : MonoBehaviour
         selectedTattoo.GetComponent<Collider>().enabled = false;
         selectedTattoo.transform.position = pos - 0.005f * forward;
         //selectedTattoo.transform.forward = forward;
-        selectedTattoo.transform.rotation = Quaternion.LookRotation(forward, selectedTattoo.transform.up);
+        Vector3 rot = Quaternion.LookRotation(forward, selectedTattoo.transform.up).eulerAngles;
+        rot.z = 0;
+        selectedTattoo.transform.rotation = Quaternion.Euler(rot);
         selectedTattoo.Reset();
     }
 

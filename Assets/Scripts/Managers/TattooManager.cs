@@ -45,7 +45,8 @@ public class TattooManager : MonoBehaviour
         //normal = new Vector3(0, 0, -1);
 
         Vector3 rot = Quaternion.LookRotation(forward, Camera.main.transform.up).eulerAngles;
-        GameObject g = SpawnTattoo(pos, rot, currentTattooTexture, 0.1f).gameObject;
+        rot.z = 0;
+        GameObject g = SpawnTattoo(pos, rot, currentTattooTexture, TattooEditor.instance.size).gameObject;
 
         lastTattoo = g;
         currentTattooTexture = null;
@@ -116,10 +117,10 @@ public class TattooManager : MonoBehaviour
     {
         GameObject g = GameObject.Instantiate(tattooPrefab, pos, Quaternion.Euler(rotation));
 
-        g.transform.localScale = new Vector3(size, size, 1);
-
         SmartTattoo smartTattoo = g.GetComponent<SmartTattoo>();
         smartTattoo.texture = texture;
+        smartTattoo.Size = size;
+
         spawnedTattoos.Add(smartTattoo);
 
         return smartTattoo;
