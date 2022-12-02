@@ -25,10 +25,6 @@ public class ProfileManager : MonoBehaviour
 
         string[] availableProfiles = fileManager.GetAllAvailableProfiles();
         UIManager.instance.showAvailableProfiles(availableProfiles);
-        foreach (var p in availableProfiles)
-        {
-            print(p);
-        }
 
         string settingsData = fileManager.LoadSettings();
         if (settingsData != null && settingsData != "")

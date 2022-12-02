@@ -10,6 +10,8 @@ public class MeshColliderUpdate : MonoBehaviour
     SkinnedMeshRenderer renderer;
     void Start()
     {
+        print(name);
+
         meshCollider = GetComponent<MeshCollider>();
         renderer = GetComponentInChildren<SkinnedMeshRenderer>();
 

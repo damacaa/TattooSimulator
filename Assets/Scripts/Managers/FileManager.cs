@@ -44,7 +44,6 @@ public class FileManager
         Initialize();
     }
 
-
     public void Initialize()
     {
         Helpers.SafeCreateDirectory(root + "/Saves");

@@ -33,7 +33,7 @@ public class DesignManager : MonoBehaviour
 
     public void LoadDesigns()
     {
-        print(buttons.Count + " buttons deleted");
+
         foreach (GameObject b in buttons)
         {
             Destroy(b);

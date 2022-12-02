@@ -6,6 +6,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Creates and destroys tattoos.
+/// </summary>
 public class TattooManager : MonoBehaviour
 {
     static public TattooManager instance;
@@ -25,7 +28,6 @@ public class TattooManager : MonoBehaviour
     GameObject lastTattoo;
 
     public List<SmartTattoo> spawnedTattoos = new List<SmartTattoo>();
-
 
     public void SetTexture(string s)
     {
@@ -96,9 +98,6 @@ public class TattooManager : MonoBehaviour
         Destroy(tattoo.gameObject);
     }
 
-
-
-
     public void Reset()
     {
         TattooEditor.instance.Reset();
@@ -143,7 +142,4 @@ public class TattooManager : MonoBehaviour
             return st.texture = t;
         }
     }
-
-    /////////////////////// THIS SHOULD BE ANOTHER SCRIPT
-
 }
