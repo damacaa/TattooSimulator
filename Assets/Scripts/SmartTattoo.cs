@@ -65,6 +65,33 @@ public abstract class SmartTattoo : MonoBehaviour
     [SerializeField]
     internal float stiffness = 1f;
 
+    // Transform
+    float angle = 0;
+    public float Angle
+    {
+        get { return angle; }
+        set
+        {
+            angle = value;
+
+            Vector3 rot = transform.rotation.eulerAngles;
+            rot.z = angle;
+            transform.rotation = Quaternion.Euler(rot);
+        }
+    }
+
+    float size = 0.1f;
+    public float Size
+    {
+        get { return size; }
+        set
+        {
+            size = value;
+            transform.localScale = new Vector3(size, size, 1);
+            AdjustScale();
+        }
+    }
+
     //Mesh info
     protected int verticesPerFace;
     protected int verticesPerWidth, verticesPerHeight;
@@ -153,7 +180,7 @@ public abstract class SmartTattoo : MonoBehaviour
 
     protected abstract void UpdateMesh(float h);
 
-    public void AdjustScale()
+    protected void AdjustScale()
     {
         float width = transform.localScale.x;
         float heigth = width * (float)texture.height / (float)texture.width;//Not working perfectly, texture width and height don't match picture's
