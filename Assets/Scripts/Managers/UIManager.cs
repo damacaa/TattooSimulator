@@ -51,11 +51,14 @@ namespace UI
         void Start()
         {
             UI.SetActive(false);
+
             settings.SetActive(false);
             selector.SetActive(false);
             deleteConfirmationWindow.SetActive(false);
+
 #if UNITY_WEBGL
-        profileSelector.gameObject.SetActive(false);
+            UI.SetActive(true);
+            profileSelector.gameObject.SetActive(false);
 #endif
         }
 

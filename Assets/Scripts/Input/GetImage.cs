@@ -2,25 +2,26 @@ using UnityEngine;
 using System.Collections;
 using System.Runtime.InteropServices;
 
-public class GetImage {
+public class GetImage
+{
 
-    #if UNITY_WEBGL
+#if UNITY_WEBGL
 
-        [DllImport("__Internal")]
-        private static extern void getImageFromBrowser(string objectName, string callbackFuncName);
+    [DllImport("__Internal")]
+    private static extern void getImageFromBrowser(string objectName, string callbackFuncName);
 
-    #endif
+#endif
 
     static public void GetImageFromUserAsync(string objectName, string callbackFuncName)
     {
-        #if UNITY_WEBGL
+#if UNITY_WEBGL
 
-            getImageFromBrowser(objectName, callbackFuncName);
+        getImageFromBrowser(objectName, callbackFuncName);
 
-        #else
+#else
 
             Debug.LogError("Not implemented in this platform");
 
-        #endif
+#endif
     }
 }
