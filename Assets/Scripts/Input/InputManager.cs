@@ -49,7 +49,7 @@ public class InputManager : MonoBehaviour
 
         if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
         {
-            TattooManager.instance.Undo();
+            TattooSpawner.Instance.Undo();
         }
 
         if (Helpers.IsOverUI())
@@ -111,10 +111,10 @@ public class InputManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
-            TattooManager.instance.Preview(hit.point, hit.normal);
+            TattooSpawner.Instance.Preview(hit.point, hit.normal);
         }
         else
-            TattooManager.instance.HideCursor();
+            TattooSpawner.Instance.HideCursor();
     }
 
 
@@ -128,9 +128,9 @@ public class InputManager : MonoBehaviour
             {
                 //TattooEditor.instance.MoveTattoo(hit.point, 0.5f * ray.direction + 0.5f * -hit.normal);
                 if (forwardIsNormal)
-                    TattooEditor.instance.MoveTattoo(hit.point, -hit.normal);
+                    TattooEditor.Instance.MoveTattoo(hit.point, -hit.normal);
                 else
-                    TattooEditor.instance.MoveTattoo(hit.point, ray.direction);
+                    TattooEditor.Instance.MoveTattoo(hit.point, ray.direction);
             }
         }
         else if (!zooming)
@@ -154,14 +154,14 @@ public class InputManager : MonoBehaviour
                 case "Tattoo":
                     SmartTattoo t = hit.collider.GetComponent<SmartTattoo>();
                     if (!t.enabled)
-                        TattooManager.instance.PrintTattoo(hit.point, -hit.normal);
+                        TattooSpawner.Instance.PrintTattoo(hit.point, -hit.normal);
                     StartCoroutine(CheckHold(mousePosition, t));
                     break;
                 case "Man":
                     if (forwardIsNormal)
-                        TattooManager.instance.PrintTattoo(hit.point, -hit.normal);
+                        TattooSpawner.Instance.PrintTattoo(hit.point, -hit.normal);
                     else
-                        TattooManager.instance.PrintTattoo(hit.point, ray.direction);
+                        TattooSpawner.Instance.PrintTattoo(hit.point, ray.direction);
                     break;
                 default:
 
@@ -169,7 +169,7 @@ public class InputManager : MonoBehaviour
             }
         }
 
-        TattooEditor.instance.Deselect();
+        TattooEditor.Instance.Deselect();
     }
 
     IEnumerator CheckHold(Vector3 initialPos, SmartTattoo tattoo)
@@ -184,7 +184,7 @@ public class InputManager : MonoBehaviour
             if (!holdingTattoo || (mousePosition - lastPos).magnitude > 10f)
             {
                 print("Hold cancelled");
-                TattooEditor.instance.SelectTattoo(tattoo);
+                TattooEditor.Instance.SelectTattoo(tattoo);
                 CameraBehaviour.instance.MoveTargetTo(tattoo.transform.position);
                 yield break;
             }
@@ -194,7 +194,7 @@ public class InputManager : MonoBehaviour
         }
 
         movingTattoo = true;
-        TattooEditor.instance.SelectTattoo(tattoo);
+        TattooEditor.Instance.SelectTattoo(tattoo);
         yield return null;
     }
 
@@ -202,7 +202,7 @@ public class InputManager : MonoBehaviour
     {
         //print("Mouse up");
         if (movingTattoo)
-            TattooEditor.instance.StopMovingTattoo();
+            TattooEditor.Instance.StopMovingTattoo();
         movingTattoo = false;
         holdingTattoo = false;
     }

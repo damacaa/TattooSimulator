@@ -7,51 +7,45 @@ using static NativeGallery;
 using SimpleFileBrowser;
 using System;
 
+
+/// <summary>
+/// Loads designs from disk.
+/// </summary>
 public class DesignManager : MonoBehaviour
 {
-    static public DesignManager instance;
+    static public DesignManager Instance;
 
     private void Awake()
     {
-        instance = this;
+        Instance = this;
     }
 
 
     [SerializeField]
-    Transform content;
-    [SerializeField]
     List<Sprite> sprites;
-    [SerializeField]
-    GameObject buttonPrefab;
+
     [SerializeField]
     bool loadFromFolder = true;
 
     public Dictionary<string, Texture> textures = new Dictionary<string, Texture>();
-    List<GameObject> buttons = new List<GameObject>();
 
     string imageFolderPath;
 
     public void LoadDesigns()
     {
-
-        foreach (GameObject b in buttons)
-        {
-            Destroy(b);
-        }
-        buttons.Clear();
-
+        // Creates new dictionary of textures
         textures = new Dictionary<string, Texture>();
 
-#if !UNITY_WEBGL || UNITY_EDITOR
-        imageFolderPath = FileManager.Instance.ImageFolderPath;
+        // Clears existing design buttons from previous profile
+        UI.DesignSelector.Instance.DeleteButtons();
 
+#if !UNITY_WEBGL || UNITY_EDITOR
+
+        // Clears memory
         Resources.UnloadUnusedAssets();
 
-        /*for (int i = 0; i < sprites.Count; i++)
-        {
-            AddButton(sprites[i].texture, sprites[i].texture.name);
-        }
-        sprites.Clear();*/
+        // Loads all designs in current profile's folder
+        imageFolderPath = FileManager.Instance.ImageFolderPath;
 
         if (loadFromFolder)
         {
@@ -66,18 +60,58 @@ public class DesignManager : MonoBehaviour
             }
             //Debug.Log("Loading done");
         }
-
-        //TattooManager.instance.LoadData();
-
 #endif
     }
 
-    private static Texture2D GetEmptyTexture(int w, int h)
+    /// <summary>
+    /// Adds design to database and creates a button to select it.
+    /// </summary>
+    /// <param name="tex"></param>
+    /// <param name="name"></param>
+    void AddDesign(Texture2D tex, string name)
+    {
+        while (textures.ContainsKey(name))
+        {
+            name += "_copy";
+        }
+
+        tex.name = name;
+        textures[name] = tex;
+        Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+
+        UI.DesignSelector.Instance.AddDesignButton(s, name);
+
+#if !UNITY_WEBGL
+        // Saves new design to files
+        byte[] bytes = tex.EncodeToPNG();
+        File.WriteAllBytes(imageFolderPath + "/" + name + ".png", bytes);
+        //Resources.UnloadUnusedAssets();
+#endif
+    }
+
+    public Texture GetDesign(string design)
+    {
+        return textures[design];
+    }
+
+    public void DeleteDesign(string design)
+    {
+        TattooSpawner.Instance.DeleteTattoosWithDesign(design);
+        File.Delete(imageFolderPath + "/" + design + ".png");
+        Resources.UnloadUnusedAssets();
+    }
+
+    Texture2D GetEmptyTexture(int w, int h)
     {
         return new Texture2D(w, h, TextureFormat.RGBA32, false);
     }
 
-    public static Texture2D LoadPNG(string filePath)
+    /// <summary>
+    /// Generates a Unity Texture2D from a png
+    /// </summary>
+    /// <param name="filePath">Image path</param>
+    /// <returns></returns>
+    Texture2D LoadPNG(string filePath)
     {
 
         Texture2D tex = null;
@@ -92,42 +126,6 @@ public class DesignManager : MonoBehaviour
             //tex.anisoLevel = 8;
         }
         return tex;
-    }
-
-    void AddDesign(Texture2D tex, string name)
-    {
-        while (textures.ContainsKey(name))
-        {
-            name += "_copy";
-        }
-
-        tex.name = name;
-        textures[name] = tex;
-        Sprite s = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
-
-
-        GameObject g = GameObject.Instantiate(buttonPrefab, content);
-        g.GetComponent<TattooSelectionButton>().SetSprite(s, name);
-        g.transform.SetSiblingIndex(g.transform.GetSiblingIndex() - 1);
-        buttons.Add(g);
-
-#if !UNITY_WEBGL
-        byte[] bytes = tex.EncodeToPNG();
-        File.WriteAllBytes(imageFolderPath + "/" + name + ".png", bytes);
-        //Resources.UnloadUnusedAssets();
-#endif
-    }
-
-    internal Texture GetDesign(string design)
-    {
-        return textures[design];
-    }
-
-    public void DeleteDesign(string design)
-    {
-        TattooManager.instance.DeleteTattoosWithDesign(design);
-        File.Delete(imageFolderPath + "/" + design + ".png");
-        Resources.UnloadUnusedAssets();
     }
 
     public void RequestImage()
@@ -244,5 +242,5 @@ public class DesignManager : MonoBehaviour
         }
     }
 
-    
+
 }

@@ -9,13 +9,13 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// Creates and destroys tattoos.
 /// </summary>
-public class TattooManager : MonoBehaviour
+public class TattooSpawner : MonoBehaviour
 {
-    static public TattooManager instance;
+    static public TattooSpawner Instance;
 
     private void Awake()
     {
-        instance = this;
+        Instance = this;
         HideCursor();
     }
 
@@ -31,8 +31,8 @@ public class TattooManager : MonoBehaviour
 
     public void SetTexture(string s)
     {
-        currentTattooTexture = DesignManager.instance.GetDesign(s);
-        UIManager.instance.ShowSettings();
+        currentTattooTexture = DesignManager.Instance.GetDesign(s);
+        UI.UIManager.instance.ShowSettings();
     }
 
     public void PrintTattoo(Vector3 pos, Vector3 forward)
@@ -48,13 +48,13 @@ public class TattooManager : MonoBehaviour
 
         Vector3 rot = Quaternion.LookRotation(forward, Camera.main.transform.up).eulerAngles;
         rot.z = 0;
-        GameObject g = SpawnTattoo(pos, rot, currentTattooTexture, TattooEditor.instance.size).gameObject;
+        GameObject g = SpawnTattoo(pos, rot, currentTattooTexture, TattooEditor.Instance.Size).gameObject;
 
         lastTattoo = g;
         currentTattooTexture = null;
 
         HideCursor();
-        UIManager.instance.HideSettings();
+        UI.UIManager.instance.HideSettings();
         ProfileManager.instance.Save();
 
 #if UNITY_EDITOR
@@ -71,8 +71,8 @@ public class TattooManager : MonoBehaviour
         cursor.transform.position = pos;
         cursor.transform.forward = -normal;
         Vector3 rot = cursor.transform.rotation.eulerAngles;
-        rot.z = TattooEditor.instance.angle;
-        cursor.transform.localScale = new Vector3(TattooEditor.instance.size, TattooEditor.instance.size, 0.05f);
+        rot.z = TattooEditor.Instance.Angle;
+        cursor.transform.localScale = new Vector3(TattooEditor.Instance.Size, TattooEditor.Instance.Size, 0.05f);
         cursor.transform.rotation = Quaternion.Euler(rot);
     }
 
@@ -100,7 +100,7 @@ public class TattooManager : MonoBehaviour
 
     public void Reset()
     {
-        TattooEditor.instance.Reset();
+        TattooEditor.Instance.Reset();
 
         currentTattooTexture = null;
         lastTattoo = null;
@@ -109,7 +109,7 @@ public class TattooManager : MonoBehaviour
             Destroy(t.gameObject);
         }
         spawnedTattoos.Clear();
-        UIManager.instance.HideSettings();
+        UI.UIManager.instance.HideSettings();
     }
 
     public SmartTattoo SpawnTattoo(Vector3 pos, Vector3 rotation, Texture texture, float size)
@@ -127,7 +127,7 @@ public class TattooManager : MonoBehaviour
 
     internal void DeleteTattoosWithDesign(string design)
     {
-        Texture t = DesignManager.instance.GetDesign(design);
+        Texture t = DesignManager.Instance.GetDesign(design);
 
         List<SmartTattoo> tattosToRemove = spawnedTattoos.FindAll(HasSameDesing);
 

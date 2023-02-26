@@ -5,40 +5,41 @@ using UnityEngine;
 
 public class TattooEditor : MonoBehaviour
 {
-    public static TattooEditor instance;
-
-    SmartTattoo selectedTattoo;
-
-
+    public static TattooEditor Instance;
     private void Awake()
     {
-        instance = this;
+        Instance = this;
     }
 
-    public float angle = 0;
-    public float size = 0.1f;
+    [SerializeField]
+    UI.TattooEditorUI _ui;
+
+    public float Angle { get; private set; }
+    public float Size { get; private set; }
+    SmartTattoo selectedTattoo;
 
     private void Start()
-    {    
-        UIManager.instance.SetSettings(angle, size);
+    {
+        Size = 0.1f;
+        _ui.SetSettings(Angle, Size);
     }
 
     public void SetAngle(float a)
     {
-        angle = -a;
+        Angle = -a;
     }
 
     public void SetSize(float s)
     {
-        size = s;
+        Size = s;
     }
 
     public void SelectTattoo(SmartTattoo tattoo)
     {
         selectedTattoo = tattoo;
 
-        UIManager.instance.ShowSettings();
-        UIManager.instance.SetSettings(tattoo.Angle, tattoo.Size);
+        UI.UIManager.instance.ShowSettings();
+        _ui.SetSettings(tattoo.Angle, tattoo.Size);
         StartCoroutine(AdjustTattoo());
 
 #if UNITY_EDITOR
@@ -48,8 +49,8 @@ public class TattooEditor : MonoBehaviour
 
     IEnumerator AdjustTattoo()
     {
-        float lastSize = size;
-        float lastAngle = angle;
+        float lastSize = Size;
+        float lastAngle = Angle;
 
         Vector3 rot = selectedTattoo.transform.rotation.eulerAngles;
         float defaultZ = rot.z;
@@ -62,7 +63,7 @@ public class TattooEditor : MonoBehaviour
             //Vector3 rot = selectedTattoo.transform.rotation.eulerAngles;
             //rot.z += angle;
             //g.transform.rotation = Quaternion.Euler(rot);
-            if (angle != lastAngle)
+            if (Angle != lastAngle)
             {
                 if (!hasChanges)
                 {
@@ -70,11 +71,11 @@ public class TattooEditor : MonoBehaviour
                     hasChanges = true;
                 }
 
-                lastAngle = angle;
-                selectedTattoo.Angle = angle;
+                lastAngle = Angle;
+                selectedTattoo.Angle = Angle;
             }
 
-            if (size != lastSize)
+            if (Size != lastSize)
             {
                 if (!hasChanges)
                 {
@@ -82,8 +83,8 @@ public class TattooEditor : MonoBehaviour
                     hasChanges = true;
                 }
 
-                lastSize = size;
-                selectedTattoo.Size = size;
+                lastSize = Size;
+                selectedTattoo.Size = Size;
             }
 
             if (!hasChanges)
@@ -113,15 +114,15 @@ public class TattooEditor : MonoBehaviour
     public void Deselect()
     {
         selectedTattoo = null;
-        UIManager.instance.HideSettings();
+        UI.UIManager.instance.HideSettings();
     }
 
     public void DeleteSelected()
     {
         if (selectedTattoo)
         {
-            TattooManager.instance.DeleteTattoo(selectedTattoo);
-            UIManager.instance.HideSettings();
+            TattooSpawner.Instance.DeleteTattoo(selectedTattoo);
+            UI.UIManager.instance.HideSettings();
             ProfileManager.instance.Save();
         }
     }
@@ -150,5 +151,6 @@ public class TattooEditor : MonoBehaviour
     public void Reset()
     {
         selectedTattoo = null;
+        _ui.SetSettings(0, .1f);
     }
 }

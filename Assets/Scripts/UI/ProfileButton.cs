@@ -3,23 +3,27 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class ProfileButton : MonoBehaviour
+namespace UI
 {
-    [SerializeField]
-    TextMeshProUGUI buttonText;
-    [SerializeField]
-    string profileName;
-    public void SetProfile(string profile)
+    public class ProfileButton : MonoBehaviour
     {
-        profileName = profile;
-        buttonText.text = profileName;
-    }
+        [SerializeField]
+        TextMeshProUGUI buttonText;
+        [SerializeField]
+        string profileName;
+        public void SetProfile(string profile)
+        {
+            profileName = profile;
+            buttonText.text = profileName;
+        }
 
-    public void SelectProfile()
-    {
-        print(profileName);
-        ProfileManager.instance.SetProfile(profileName);
-        ProfileManager.instance.LoadData();
-        UIManager.instance.hideAvailableProfiles();
+        public void SelectProfile()
+        {
+            print($"Current profile: {profileName}");
+            ProfileManager.instance.SetProfile(profileName);
+            ProfileManager.instance.LoadData();
+            UIManager.instance.HideProfiles();
+            UIManager.instance.ShowUI();
+        }
     }
 }

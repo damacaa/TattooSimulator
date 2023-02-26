@@ -20,7 +20,7 @@ public class ProfileManager : MonoBehaviour
 #if !UNITY_WEBGL
 
         string[] availableProfiles = FileManager.Instance.GetAllAvailableProfiles();
-        UIManager.instance.showAvailableProfiles(availableProfiles);
+        UI.UIManager.instance.ShowProfiles(availableProfiles);
 
         string settingsData = FileManager.Instance.LoadSettings();
         if (settingsData != null && settingsData != "")
@@ -43,7 +43,7 @@ public class ProfileManager : MonoBehaviour
     public void SetProfile(string s)
     {
         profile = s;
-        UIManager.instance.UpdateProfile(profile);
+        UI.UIManager.instance.UpdateProfile(profile);
         FileManager.Instance.SetCurrentProfile(profile);
         if (settings != null)
         {
@@ -58,9 +58,9 @@ public class ProfileManager : MonoBehaviour
     {
 #if !UNITY_WEBGL
         unableToLoadTattoos.Clear();
-        TattooManager.instance.Reset();
+        TattooSpawner.Instance.Reset();
 
-        DesignManager.instance.LoadDesigns();
+        DesignManager.Instance.LoadDesigns();
 
         string data = FileManager.Instance.LoadData();
         if (data == null)
@@ -70,14 +70,14 @@ public class ProfileManager : MonoBehaviour
         foreach (TattooInfo t in tattoList.tattoos)
         {
             Texture tex;
-            if (!DesignManager.instance.textures.TryGetValue(t.texture, out tex))
+            if (!DesignManager.Instance.textures.TryGetValue(t.texture, out tex))
             {
                 unableToLoadTattoos.Add(t);
                 print("Unable to load " + t.texture);
                 continue;
             }
 
-            TattooManager.instance.SpawnTattoo(t.position, t.euler, tex, t.size);
+            TattooSpawner.Instance.SpawnTattoo(t.position, t.euler, tex, t.size);
         }
         Save();
 #endif
@@ -89,7 +89,7 @@ public class ProfileManager : MonoBehaviour
         print("Saving: " + FileManager.Instance.CurrentProfileDataPath);
 
         List<TattooInfo> tattooInfos = new List<TattooInfo>();
-        foreach (SmartTattoo smartTattoo in TattooManager.instance.spawnedTattoos)
+        foreach (SmartTattoo smartTattoo in TattooSpawner.Instance.spawnedTattoos)
         {
             tattooInfos.Add(smartTattoo.GetInfo());
         }
@@ -110,7 +110,7 @@ public class ProfileManager : MonoBehaviour
 
     public void DeleteProfile()
     {
-        UIManager.instance.ShowDeleteConfirmatioWindow();
+        UI.UIManager.instance.ShowDeleteConfirmatioWindow();
     }
 
     public void ConfirmDelete()
@@ -119,7 +119,7 @@ public class ProfileManager : MonoBehaviour
         SetProfile("Default");
         LoadData();
         Save();
-        UIManager.instance.HideDeleteConfirmatioWindow();
+        UI.UIManager.instance.HideDeleteConfirmatioWindow();
     }
 
 
