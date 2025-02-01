@@ -61,6 +61,13 @@ public class DesignManager : MonoBehaviour
             //Debug.Log("Loading done");
         }
 #endif
+
+#if UNITY_WEBGL || UNITY_EDITOR
+        foreach (var sprite in sprites)
+        {
+            AddDesign(sprite.texture, sprite.name);
+        }
+#endif
     }
 
     /// <summary>
@@ -130,13 +137,13 @@ public class DesignManager : MonoBehaviour
 
     public void RequestImage()
     {
-#if UNITY_WEBGL
+#if UNITY_WEBGL && !UNITY_EDITOR
         GetImage.GetImageFromUserAsync(gameObject.name, "ReceiveImage");
         //Alternative:
         //https://forum.unity.com/threads/how-do-i-let-the-user-load-an-image-from-their-harddrive-into-a-webgl-app.380985/
-#elif UNITY_STANDALONE
+#elif UNITY_STANDALONE 
         PickImageStandalone();
-#elif UNITY_ANDROID || UNITY_IOS
+#elif UNITY_ANDROID || UNITY_IOS|| UNITY_EDITOR
         PickImageMobile(0);
 #endif
     }

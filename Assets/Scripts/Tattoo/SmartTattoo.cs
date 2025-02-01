@@ -92,6 +92,8 @@ public abstract class SmartTattoo : MonoBehaviour
         }
     }
 
+    float _beginTime = 0;
+
     //Mesh info
     protected int verticesPerFace;
     protected int verticesPerWidth, verticesPerHeight;
@@ -119,6 +121,8 @@ public abstract class SmartTattoo : MonoBehaviour
 
     public void Begin()
     {
+        _beginTime = Time.time;
+
         gameObject.tag = "Tattoo";
         name = "Tatto: " + texture.name;
         GetComponent<MeshRenderer>().material.mainTexture = texture;
@@ -157,11 +161,11 @@ public abstract class SmartTattoo : MonoBehaviour
             return;
 
         float h = Time.fixedDeltaTime / accuracy;
+        float startTime = Time.realtimeSinceStartup;
 
-        for (int t = 0; t < Mathf.Sqrt(accuracy); t++)
+        while (Time.realtimeSinceStartup - startTime < 1f / 100f)
         {
             UpdateMesh(h);
-            stiffness = Mathf.Max(0.5f, stiffness - (10f * h));
 
             if (done)
             {
@@ -172,10 +176,12 @@ public abstract class SmartTattoo : MonoBehaviour
                 Print();
                 enabled = false;
 
-                //Debug.Log(name + " done");
-                return;
+                continue;
             }
         }
+
+        if (Time.time > _beginTime + (0.5f * accuracy))
+            stiffness = Mathf.Max(0.05f, stiffness - (10f * h));
     }
 
     protected abstract void UpdateMesh(float h);

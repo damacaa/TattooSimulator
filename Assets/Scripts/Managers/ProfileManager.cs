@@ -36,8 +36,9 @@ public class ProfileManager : MonoBehaviour
 
         SetProfile(profile);
 
-        LoadData();
 #endif
+        LoadData();
+
     }
 
     public void SetProfile(string s)
@@ -80,6 +81,8 @@ public class ProfileManager : MonoBehaviour
             TattooSpawner.Instance.SpawnTattoo(t.position, t.euler, tex, t.size);
         }
         Save();
+#else
+        DesignManager.Instance.LoadDesigns();
 #endif
     }
 

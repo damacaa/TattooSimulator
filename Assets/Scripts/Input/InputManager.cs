@@ -94,7 +94,7 @@ public class InputManager : MonoBehaviour
         //Drag
         if (Input.GetMouseButton(2))
         {
-            CameraBehaviour.instance.MoveCenter(Input.GetAxis("Mouse X") * Time.deltaTime, -Input.GetAxis("Mouse Y") * Time.deltaTime);
+            CameraBehaviour.instance.MoveCenter(Input.GetAxis("Mouse X") * Mathf.Min(Time.deltaTime, 1f / 60f), -Input.GetAxis("Mouse Y") * Time.deltaTime);
         }
 
 
